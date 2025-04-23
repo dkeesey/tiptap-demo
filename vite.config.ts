@@ -10,36 +10,48 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  // Optimize TipTap dependencies to prevent circular reference issues
+  optimizeDeps: {
+    include: [
+      '@tiptap/core',
+      '@tiptap/pm/model',
+      '@tiptap/pm/view',
+      '@tiptap/pm/state',
+      '@tiptap/pm/transform',
+      '@tiptap/extension-document',
+      '@tiptap/extension-paragraph',
+      '@tiptap/extension-text',
+    ],
+    // Force some dependencies to be pre-bundled to avoid initialization issues
+    force: true,
+  },
   build: {
+    // Improve chunking to avoid circular dependencies
     rollupOptions: {
       output: {
+        // Put core TipTap modules in their own chunks
         manualChunks: {
-          // React core libraries
-          react: ['react', 'react-dom'],
-          
-          // TipTap core libraries
-          tiptapCore: ['@tiptap/core', '@tiptap/react'],
-          
-          // TipTap extensions
-          tiptapExtensions: [
-            '@tiptap/starter-kit',
-            '@tiptap/extension-placeholder',
-            '@tiptap/extension-underline',
-            '@tiptap/extension-text-align',
-            '@tiptap/extension-link',
-            '@tiptap/extension-image',
-            '@tiptap/extension-highlight',
-            '@tiptap/extension-bubble-menu',
-            '@tiptap/extension-floating-menu',
+          'tiptap-core': ['@tiptap/core', '@tiptap/react'],
+          'tiptap-pm': ['@tiptap/pm/model', '@tiptap/pm/view', '@tiptap/pm/state', '@tiptap/pm/transform'],
+          'tiptap-base-extensions': [
             '@tiptap/extension-document',
             '@tiptap/extension-paragraph',
-            '@tiptap/extension-text'
+            '@tiptap/extension-text',
           ],
-          
-          // UI components and icons
-          lucideIcons: ['lucide-react']
-        }
-      }
-    }
+          'tiptap-formatting-extensions': [
+            '@tiptap/extension-bold',
+            '@tiptap/extension-italic',
+            '@tiptap/extension-heading',
+          ],
+          'tiptap-list-extensions': [
+            '@tiptap/extension-bullet-list',
+            '@tiptap/extension-ordered-list',
+            '@tiptap/extension-list-item',
+          ],
+        },
+      },
+    },
+    // Increase chunk size limit to prevent splitting core libraries
+    chunkSizeWarningLimit: 1000,
   },
 })
