@@ -58,7 +58,7 @@ const EditorFloatingMenu = ({ editor }: EditorFloatingMenuProps) => {
       </button>
 
       <button
-        onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+        onClick={() => editor.chain().focus().toggleCode().run()}
         className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-gray-700"
       >
         <IconComponent name="Code" size={16} />
