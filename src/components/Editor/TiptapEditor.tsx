@@ -6,9 +6,12 @@ import TextAlign from '@tiptap/extension-text-align'
 import Link from '@tiptap/extension-link'
 import Image from '@tiptap/extension-image'
 import Highlight from '@tiptap/extension-highlight'
-import Document from '@tiptap/extension-document'
-import Paragraph from '@tiptap/extension-paragraph'
-import Text from '@tiptap/extension-text'
+
+// Note: We're no longer importing these directly as they're included in StarterKit
+// import Document from '@tiptap/extension-document'
+// import Paragraph from '@tiptap/extension-paragraph'
+// import Text from '@tiptap/extension-text'
+
 import EditorToolbar from '../Toolbar/EditorToolbar'
 import EditorBubbleMenu from '../Menus/EditorBubbleMenu'
 import EditorFloatingMenu from '../Menus/EditorFloatingMenu'
@@ -21,16 +24,10 @@ interface TiptapEditorProps {
 const TiptapEditor = ({ content, onChange }: TiptapEditorProps) => {
   const editor = useEditor({
     extensions: [
-      // Explicitly include the core required extensions
-      Document,
-      Paragraph,
-      Text,
-      // Then include the remaining extensions
+      // Use StarterKit with default configuration
       StarterKit.configure({
-        // Disable these since we're adding them manually
-        document: false,
-        paragraph: false,
-        text: false,
+        // We're now using the default Document, Paragraph, and Text from StarterKit
+        // No need to disable them
       }),
       Placeholder.configure({
         placeholder: 'Start typing or use the toolbar to format your content...',
