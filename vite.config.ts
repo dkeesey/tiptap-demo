@@ -5,7 +5,7 @@ import path from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: './', // Changed from default '/' to relative path './'
+  base: '/', // Use absolute paths for deployment
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
