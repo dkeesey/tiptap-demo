@@ -1,5 +1,53 @@
 # TipTap Demo - Project Rules and Intelligence
 
+## Collaborative Editing Architecture
+
+### Real-time Collaboration Implementation
+For implementing real-time collaboration similar to Wordware's approach:
+
+1. **Y.js Integration**
+   - Use Y.js as the CRDT (Conflict-free Replicated Data Type) library
+   - Integrate with TipTap via the Collaboration extension
+   - Implement collaborative cursors with the CollaborationCursor extension
+
+2. **Collaboration Backend**
+   - Implement a WebSocket server using y-websocket
+   - Consider PartyKit for production-ready implementation
+   - Ensure proper authentication and document access control
+
+3. **State Management**
+   - Use SyncedStore for structured state management
+   - Implement React context for collaboration state
+   - Handle offline/online transitions gracefully
+
+4. **User Experience**
+   - Show user presence with avatars and names
+   - Display connection status indicators
+   - Implement cursor and selection highlighting
+
+### Notion-like Interface Implementation
+To create a Notion-like interface similar to Wordware:
+
+1. **Slash Command Interface**
+   - Implement a slash command extension
+   - Show command menu on typing "/"
+   - Include common block types and AI-specific blocks
+
+2. **Block-based Editing**
+   - Create custom node types for different blocks
+   - Implement drag-and-drop reordering
+   - Support nested blocks for structured content
+
+3. **AI Prompt Components**
+   - Create specialized blocks for prompt sections
+   - Implement variables/parameters system
+   - Add syntax highlighting for prompt syntax
+
+4. **Project Organization**
+   - Support multiple documents/prompts
+   - Implement file/folder structure
+   - Add tagging and search capabilities
+
 ## Deployment Learnings
 
 ### JavaScript Module MIME Type Issue in Vercel Deployments

@@ -2,10 +2,10 @@
 
 ## Current Focus
 As of April 23, 2025, the active focus is on:
-1. Testing the editor on different browsers and devices
-2. Reviewing the implementation to ensure all requirements are met
-3. Preparing for final presentation to Wordware recruiter
-4. Considering optional enhancements for Phase 3 and 4 (if time permits)
+1. Implementing collaborative editing features to mirror Wordware's approach
+2. Adding Y.js integration for real-time collaboration
+3. Creating a Notion-like interface with slash commands
+4. Setting up the project structure for a more advanced implementation
 
 ## Recent Changes
 - Created project memory bank (April 22, 2025)
@@ -18,30 +18,34 @@ As of April 23, 2025, the active focus is on:
 - Set up GitHub repository (April 23, 2025)
 - Created Vercel configuration for deployment (April 23, 2025)
 - Updated documentation and README (April 23, 2025)
+- Created comprehensive implementation plan for enhancing the demo (April 23, 2025)
+- Researched Wordware's TipTap implementation for reference (April 23, 2025)
 
 ## Current Priorities
-1. **P0**: Cross-browser testing
-2. **P0**: Mobile responsiveness testing
-3. **P0**: Final code review and cleanup
-4. **P1**: Consider implementing collaborative editing features
-5. **P2**: Consider implementing AI integration features
+1. **P0**: Implement core collaboration infrastructure with Y.js
+2. **P0**: Create collaborative cursor and user presence features
+3. **P0**: Develop slash command interface for Notion-like UX
+4. **P1**: Add AI prompt-specific components
+5. **P2**: Enhance UI to better match Wordware's implementation
 
 ## In-Progress Tasks
-- Cross-browser testing
-- Mobile device testing
+- Setting up Y.js and WebSocket infrastructure for collaboration
+- Creating React context for collaboration state management
+- Integrating TipTap collaboration extensions
 
 ## Upcoming Tasks
-- Create a list of features and highlights for presentation
-- Consider tutorial or walkthrough content for first-time users
-- Evaluate options for collaborative editing (if time permits)
+- Implement user presence indicators
+- Add slash command interface
+- Create custom nodes for AI prompts
+- Enhance UI for Notion-like experience
 
 ## Blockers and Challenges
 - None at this time
 
 ## Current Questions
-- Should collaborative editing be prioritized in the remaining time?
-- What level of documentation should be included for the demo?
-- Should a more formal presentation be prepared for the recruiter?
+- What's the best approach for deploying the WebSocket server alongside our app?
+- How can we optimize the offline experience for collaborative editing?
+- What's the best way to structure custom AI prompt nodes?
 
 ## Recent Learnings
 - TipTap's extension system is powerful and modular
@@ -55,9 +59,14 @@ As of April 23, 2025, the active focus is on:
 - Extensions can be configured with options to customize behavior
 - Converting to and from Markdown requires careful handling of formatting
 - TipTap's headless architecture makes implementing custom UI straightforward
+- Wordware uses Y.js as their CRDT for collaborative editing
+- They use SyncedStore as a wrapper around Y.Doc for easier state management
+- PartyKit serves as their collaboration backend
+- They implement a Notion-like slash command interface for adding blocks
+- Their implementation follows an offline-first approach for resilience
 
 ## Active Branches and Changes
-- Main branch: Complete implementation with markdown support
+- Main branch: Complete implementation with markdown support and collaborative features plan
 
 ## Deployment Status
 - Ready for deployment on Vercel
