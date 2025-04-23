@@ -1,5 +1,30 @@
 # TipTap Demo - Project Rules and Intelligence
 
+## Deployment Learnings
+
+### JavaScript Module MIME Type Issue in Vercel Deployments
+When deploying to Vercel, the application initially encountered "Failed to load module script" errors with the message "Expected a JavaScript module script but the server responded with a MIME type of text/html". This only occurred in production, not in development.
+
+**Root Cause:**
+- In SPA deployments, when a JavaScript module can't be found, Vercel falls back to serving index.html but with the incorrect MIME type
+- The browser expects JavaScript modules to be served with the MIME type 'application/javascript'
+- Development servers handle this situation differently than production servers
+
+**Solution:**
+1. Use absolute paths in Vite config: `base: '/'`
+2. Configure Vercel with rewrites instead of routes:
+```json
+"rewrites": [
+  { "source": "/(assets/.+)", "destination": "/$1" },
+  { "source": "/(.*)", "destination": "/index.html" }
+]
+```
+3. Include a `_redirects` file in the public directory as backup
+
+**Why Development vs Production Differs:**
+- Development servers (Vite) understand SPA architecture and handle non-existent file requests appropriately
+- Production servers (Vercel) serve static files and need explicit configuration for SPA behavior
+
 ## Code and Architecture Patterns
 
 ### React Component Structure
