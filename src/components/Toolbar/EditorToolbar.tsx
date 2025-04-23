@@ -10,6 +10,7 @@ import {
   Redo,
   Quote
 } from 'lucide-react'
+import MarkdownControls from './MarkdownControls'
 
 interface EditorToolbarProps {
   editor: Editor
@@ -121,6 +122,8 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
       >
         <Redo size={18} />
       </button>
+      
+      <MarkdownControls editor={editor} />
     </div>
   )
 }

@@ -1,85 +1,126 @@
-# TipTap Editor Demo for Wordware
+# TipTap Editor Demo
 
-A progressive demonstration of TipTap's capabilities, showcasing how this headless rich text editor framework can be implemented for collaborative editing experiences.
+A demonstration of TipTap's capabilities, built with React, TypeScript, and Tailwind CSS.
 
-## Purpose
+## Features
 
-This project is a technical demonstration of TipTap for a job application at Wordware, which uses TipTap as part of their AI development platform.
+- Rich text formatting (bold, italic, headings, lists, blockquotes)
+- Context-specific menus (bubble menu, floating menu)
+- Markdown import and export
+- Automatic content saving with localStorage
+- Clean, modern UI with Tailwind CSS
+- Responsive design for all screen sizes
 
-## Development Timeline
+## Getting Started
 
-- Project Start: Tuesday, April 22, 2025
-- Initial Deployment: Wednesday, April 23, 2025
-- Feature Completion: Saturday, April 26, 2025
-- Final Review: Sunday, April 27, 2025
-- Presentation to Recruiter: Monday, April 28, 2025
+### Prerequisites
 
-## Planned Features
+- Node.js (v18 or later)
+- npm or yarn
 
-### Phase 1: Basic Implementation
-- Core text editing capabilities
-- Clean, minimalist UI
-- Text formatting options (bold, italic, headings, lists)
-- Mobile-responsive design
+### Installation
 
-### Phase 2: Enhanced Experience
-- Expanded toolbar with more formatting options
-- Bubble menu for selected text
-- Floating menu for empty paragraphs
-- Document persistence (local storage)
-- Markdown import/export
-- Custom keyboard shortcuts
-
-### Phase 3: Optional Advanced Features
-- Collaborative editing (if time permits)
-- AI integration features (if time permits)
-- Custom extensions demonstration
-
-## Development Setup
+1. Clone the repository:
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/tiptap-demo.git
+git clone https://github.com/deankeesey/tiptap-demo.git
 cd tiptap-demo
-
-# Install dependencies
-npm install
-
-# Start the development server
-npm run dev
 ```
+
+2. Install dependencies:
+
+```bash
+npm install
+# or
+yarn install
+```
+
+3. Start the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+```
+
+4. Open your browser and navigate to [http://localhost:5173](http://localhost:5173)
 
 ## Project Structure
 
 ```
-src/
-├── components/     # UI components
-│   ├── Editor/     # TipTap editor components
-│   ├── Toolbar/    # Editor toolbar components
-│   └── Menus/      # Floating and bubble menu components
-├── hooks/          # Custom React hooks
-├── extensions/     # Custom TipTap extensions
-├── utils/          # Utility functions
-└── styles/         # Global styles and CSS modules
+tiptap-demo/
+├── src/
+│   ├── components/
+│   │   ├── Editor/
+│   │   │   └── TiptapEditor.tsx     # Main editor component
+│   │   ├── Icons/                   # Icon components
+│   │   ├── Menus/
+│   │   │   ├── EditorBubbleMenu.tsx # Selection-based menu
+│   │   │   └── EditorFloatingMenu.tsx # Empty paragraph menu
+│   │   └── Toolbar/
+│   │       ├── EditorToolbar.tsx    # Main formatting toolbar
+│   │       └── MarkdownControls.tsx # Markdown import/export controls
+│   ├── extensions/
+│   │   └── tiptap-extensions-minimal.ts # TipTap extensions config
+│   ├── hooks/                       # Custom React hooks
+│   ├── styles/                      # CSS and style utilities
+│   ├── utils/
+│   │   ├── markdown.ts             # Markdown conversion utilities
+│   │   └── storage.ts              # LocalStorage utilities
+│   ├── App.tsx                     # Main application component
+│   └── main.tsx                    # Application entry point
+├── public/                         # Static assets
+├── index.html                      # HTML template
+├── tailwind.config.js              # Tailwind CSS configuration
+├── tsconfig.json                   # TypeScript configuration
+└── vite.config.ts                  # Vite configuration
 ```
 
-## Technologies Used
+## Key Technologies Used
 
-- React with TypeScript
-- TipTap editor framework
-- TailwindCSS for styling
-- Vite for build and development
-- Vercel for deployment
+- **[TipTap](https://tiptap.dev/)** - Headless WYSIWYG editor framework
+- **[React](https://reactjs.org/)** - UI framework
+- **[TypeScript](https://www.typescriptlang.org/)** - Type safety
+- **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
+- **[Vite](https://vitejs.dev/)** - Next generation frontend tooling
+- **[Lucide Icons](https://lucide.dev/)** - Beautiful open-source icons
+- **[Markdown-it](https://github.com/markdown-it/markdown-it)** - Markdown parsing
 
 ## Deployment
 
-The application is deployed on Vercel and can be accessed at [https://tiptap-demo.vercel.app](https://tiptap-demo.vercel.app) (placeholder URL).
+This project is deployed on Vercel. You can view the live demo at [https://tiptap-demo-deankeesey.vercel.app](https://tiptap-demo-deankeesey.vercel.app).
 
-## Learning Resources
+### Deployment Steps
 
-- [TipTap Documentation](https://tiptap.dev/docs)
-- [React Integration Guide](https://tiptap.dev/docs/editor/getting-started/install/react)
-- [TipTap Examples](https://tiptap.dev/docs/examples)
+1. Connect your GitHub repository to Vercel
+2. Configure the build settings:
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+3. Deploy
+
+## Feature Implementation Details
+
+### Rich Text Editing
+
+The core editor functionality is implemented using TipTap extensions, with a clean separation of concerns between the editor instance, UI components, and utility functions.
+
+### Contextual Menus
+
+The editor provides two types of contextual menus:
+- **Bubble Menu**: Appears when text is selected, offering inline formatting options
+- **Floating Menu**: Appears when the cursor is in an empty paragraph, offering block-level formatting options
+
+### Markdown Support
+
+Markdown import/export is implemented through utilities that convert between HTML and Markdown formats. The user can:
+- Import Markdown files
+- Export current content as Markdown
+- View the Markdown representation of the content
+- Download the content as a Markdown file
+
+### Persistence
+
+The editor content is automatically saved to the browser's localStorage, ensuring that user edits persist between sessions.
 
 ## License
 

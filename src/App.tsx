@@ -35,7 +35,7 @@ function App() {
         <div className="max-w-5xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <div>
             <h1 className="text-xl font-semibold text-gray-900">TipTap Editor Demo</h1>
-            <p className="text-sm text-gray-500">A demonstration of TipTap's capabilities</p>
+            <p className="text-sm text-gray-500">A demonstration of TipTap's capabilities for Wordware</p>
           </div>
           <div className="flex gap-4">
             <button 
@@ -51,7 +51,7 @@ function App() {
               Reset Content
             </button>
             <a 
-              href="https://github.com/yourusername/tiptap-demo" 
+              href="https://github.com/deankeesey/tiptap-demo" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-sm text-blue-600 hover:text-blue-800"
@@ -77,7 +77,30 @@ function App() {
             </Suspense>
           </div>
           
-          {/* Optional: Preview Panel */}
+          {/* Feature Documentation */}
+          <div className="mt-6 p-4 bg-white shadow-sm rounded-lg border border-gray-200">
+            <h2 className="text-lg font-medium text-gray-900 mb-2">Features</h2>
+            <div className="text-sm text-gray-700 space-y-4">
+              <div>
+                <h3 className="font-medium mb-1">Text Editing</h3>
+                <p>Format text with bold, italic, headings, lists, and quotes.</p>
+              </div>
+              <div>
+                <h3 className="font-medium mb-1">Context Menus</h3>
+                <p>Access formatting options via contextual bubble and floating menus.</p>
+              </div>
+              <div>
+                <h3 className="font-medium mb-1">Markdown Import/Export</h3>
+                <p>Import and export content in Markdown format using the toolbar buttons.</p>
+              </div>
+              <div>
+                <h3 className="font-medium mb-1">Persistence</h3>
+                <p>Content is automatically saved to localStorage as you type.</p>
+              </div>
+            </div>
+          </div>
+          
+          {/* HTML Output Panel */}
           <div className="mt-6 p-4 bg-white shadow-sm rounded-lg border border-gray-200">
             <h2 className="text-lg font-medium text-gray-900 mb-2">HTML Output</h2>
             <pre className="bg-gray-50 p-3 rounded text-xs overflow-auto max-h-40 border border-gray-200">
