@@ -1,6 +1,10 @@
-import React from 'react'
 import { BubbleMenu, Editor } from '@tiptap/react'
-import IconComponent from '../Icons/DynamicIcon'
+import { 
+  Bold, 
+  Italic, 
+  Heading1, 
+  Heading2
+} from 'lucide-react'
 
 interface EditorBubbleMenuProps {
   editor: Editor
@@ -24,7 +28,7 @@ const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
         }`}
         title="Bold"
       >
-        <IconComponent name="Bold" size={14} />
+        <Bold size={14} />
       </button>
 
       <button
@@ -34,17 +38,7 @@ const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
         }`}
         title="Italic"
       >
-        <IconComponent name="Italic" size={14} />
-      </button>
-
-      <button
-        onClick={() => editor.chain().focus().toggleUnderline().run()}
-        className={`editor-bubble-menu-button p-1.5 rounded hover:bg-gray-100 ${
-          editor.isActive('underline') ? 'bg-gray-100 text-black' : 'text-gray-600'
-        }`}
-        title="Underline"
-      >
-        <IconComponent name="Underline" size={14} />
+        <Italic size={14} />
       </button>
 
       <div className="w-px h-5 bg-gray-200 mx-0.5"></div>
@@ -56,7 +50,7 @@ const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
         }`}
         title="Heading 1"
       >
-        <IconComponent name="Heading1" size={14} />
+        <Heading1 size={14} />
       </button>
 
       <button
@@ -66,78 +60,7 @@ const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
         }`}
         title="Heading 2"
       >
-        <IconComponent name="Heading2" size={14} />
-      </button>
-
-      <div className="w-px h-5 bg-gray-200 mx-0.5"></div>
-
-      <button
-        onClick={() => editor.chain().focus().setTextAlign('left').run()}
-        className={`editor-bubble-menu-button p-1.5 rounded hover:bg-gray-100 ${
-          editor.isActive({ textAlign: 'left' }) ? 'bg-gray-100 text-black' : 'text-gray-600'
-        }`}
-        title="Align Left"
-      >
-        <IconComponent name="AlignLeft" size={14} />
-      </button>
-
-      <button
-        onClick={() => editor.chain().focus().setTextAlign('center').run()}
-        className={`editor-bubble-menu-button p-1.5 rounded hover:bg-gray-100 ${
-          editor.isActive({ textAlign: 'center' }) ? 'bg-gray-100 text-black' : 'text-gray-600'
-        }`}
-        title="Align Center"
-      >
-        <IconComponent name="AlignCenter" size={14} />
-      </button>
-
-      <button
-        onClick={() => editor.chain().focus().setTextAlign('right').run()}
-        className={`editor-bubble-menu-button p-1.5 rounded hover:bg-gray-100 ${
-          editor.isActive({ textAlign: 'right' }) ? 'bg-gray-100 text-black' : 'text-gray-600'
-        }`}
-        title="Align Right"
-      >
-        <IconComponent name="AlignRight" size={14} />
-      </button>
-
-      <div className="w-px h-5 bg-gray-200 mx-0.5"></div>
-
-      <button
-        onClick={() => {
-          const previousUrl = editor.getAttributes('link').href
-          const url = window.prompt('Enter the URL:', previousUrl)
-          
-          // cancelled
-          if (url === null) {
-            return
-          }
-          
-          // empty
-          if (url === '') {
-            editor.chain().focus().extendMarkRange('link').unsetLink().run()
-            return
-          }
-          
-          // update link
-          editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
-        }}
-        className={`editor-bubble-menu-button p-1.5 rounded hover:bg-gray-100 ${
-          editor.isActive('link') ? 'bg-gray-100 text-black' : 'text-gray-600'
-        }`}
-        title="Link"
-      >
-        <IconComponent name="Link" size={14} />
-      </button>
-
-      <button
-        onClick={() => editor.chain().focus().toggleHighlight().run()}
-        className={`editor-bubble-menu-button p-1.5 rounded hover:bg-gray-100 ${
-          editor.isActive('highlight') ? 'bg-gray-100 text-black' : 'text-gray-600'
-        }`}
-        title="Highlight"
-      >
-        <IconComponent name="Highlighter" size={14} />
+        <Heading2 size={14} />
       </button>
     </BubbleMenu>
   )

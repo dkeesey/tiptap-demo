@@ -1,6 +1,11 @@
-import React from 'react'
 import { FloatingMenu, Editor } from '@tiptap/react'
-import IconComponent from '../Icons/DynamicIcon'
+import { 
+  Heading1, 
+  Heading2, 
+  List, 
+  ListOrdered, 
+  Quote
+} from 'lucide-react'
 
 interface EditorFloatingMenuProps {
   editor: Editor
@@ -21,7 +26,7 @@ const EditorFloatingMenu = ({ editor }: EditorFloatingMenuProps) => {
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
         className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-gray-700"
       >
-        <IconComponent name="Heading1" size={16} />
+        <Heading1 size={16} />
         <span className="text-sm">Heading 1</span>
       </button>
 
@@ -29,7 +34,7 @@ const EditorFloatingMenu = ({ editor }: EditorFloatingMenuProps) => {
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
         className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-gray-700"
       >
-        <IconComponent name="Heading2" size={16} />
+        <Heading2 size={16} />
         <span className="text-sm">Heading 2</span>
       </button>
 
@@ -37,7 +42,7 @@ const EditorFloatingMenu = ({ editor }: EditorFloatingMenuProps) => {
         onClick={() => editor.chain().focus().toggleBulletList().run()}
         className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-gray-700"
       >
-        <IconComponent name="List" size={16} />
+        <List size={16} />
         <span className="text-sm">Bullet List</span>
       </button>
 
@@ -45,7 +50,7 @@ const EditorFloatingMenu = ({ editor }: EditorFloatingMenuProps) => {
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
         className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-gray-700"
       >
-        <IconComponent name="ListOrdered" size={16} />
+        <ListOrdered size={16} />
         <span className="text-sm">Ordered List</span>
       </button>
 
@@ -53,42 +58,8 @@ const EditorFloatingMenu = ({ editor }: EditorFloatingMenuProps) => {
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
         className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-gray-700"
       >
-        <IconComponent name="Quote" size={16} />
+        <Quote size={16} />
         <span className="text-sm">Quote</span>
-      </button>
-
-      <button
-        onClick={() => editor.chain().focus().toggleCode().run()}
-        className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-gray-700"
-      >
-        <IconComponent name="Code" size={16} />
-        <span className="text-sm">Code Block</span>
-      </button>
-
-      <button
-        onClick={() => {
-          const url = window.prompt('Enter the URL of the image:')
-          if (url) {
-            editor.chain().focus().setImage({ src: url }).run()
-          }
-        }}
-        className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-gray-700"
-      >
-        <IconComponent name="Image" size={16} />
-        <span className="text-sm">Image</span>
-      </button>
-
-      <button
-        onClick={() => {
-          const url = window.prompt('Enter the URL:')
-          if (url) {
-            window.open(url)
-          }
-        }}
-        className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-gray-700"
-      >
-        <IconComponent name="FileText" size={16} />
-        <span className="text-sm">Embed</span>
       </button>
     </FloatingMenu>
   )
