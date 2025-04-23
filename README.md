@@ -1,127 +1,78 @@
-# TipTap Editor Demo
+# TipTap Collaborative Editor Demo
 
-A demonstration of TipTap's capabilities, built with React, TypeScript, and Tailwind CSS.
+A demonstration of TipTap's capabilities for building a collaborative, Notion-like text editor with real-time collaboration.
 
-## Features
+## 🌟 Features
 
-- Rich text formatting (bold, italic, headings, lists, blockquotes)
-- Context-specific menus (bubble menu, floating menu)
-- Markdown import and export
-- Automatic content saving with localStorage
-- Clean, modern UI with Tailwind CSS
-- Responsive design for all screen sizes
+- **Rich Text Editing**: Format text with a comprehensive toolbar
+- **Real-time Collaboration**: Edit together with others using Y.js and WebSockets
+- **Slash Commands**: Create content quickly with a Notion-like slash command menu
+- **User Presence**: See who's editing and where their cursor is
+- **Offline Support**: Keep working when offline with automatic syncing when reconnected
+- **Markdown Support**: Import and export content as Markdown
+- **Responsive Design**: Works on mobile and desktop
+- **Local Storage**: Content is saved automatically
 
-## Getting Started
+## 🚀 Try It Live
+
+Visit the [TipTap Demo](https://tiptap-demo.vercel.app/) to see it in action.
+
+## 🔧 Built With
+
+- [React](https://reactjs.org/) - UI Framework
+- [TypeScript](https://www.typescriptlang.org/) - Type Safety
+- [TipTap](https://tiptap.dev/) - Headless Editor Framework
+- [Y.js](https://yjs.dev/) - CRDT for Real-time Collaboration
+- [Tailwind CSS](https://tailwindcss.com/) - Styling
+
+## 📋 How to Use Collaboration
+
+1. Toggle the "Collaboration Mode" switch at the top of the editor
+2. Share the room name with others who want to collaborate
+3. See users' cursors and edits in real-time
+4. Create a new room if you want to start a fresh collaboration
+
+## 💻 Local Development
 
 ### Prerequisites
 
-- Node.js (v18 or later)
+- Node.js 16+
 - npm or yarn
 
 ### Installation
 
-1. Clone the repository:
-
 ```bash
+# Clone the repository
 git clone https://github.com/deankeesey/tiptap-demo.git
 cd tiptap-demo
-```
 
-2. Install dependencies:
-
-```bash
+# Install dependencies
 npm install
-# or
-yarn install
-```
 
-3. Start the development server:
-
-```bash
+# Start the development server
 npm run dev
-# or
-yarn dev
+
+# (Optional) Start the WebSocket server for local collaboration
+npm run websocket
 ```
 
-4. Open your browser and navigate to [http://localhost:5173](http://localhost:5173)
+## 📝 Slash Commands
 
-## Project Structure
+Type `/` in the editor to access the slash command menu:
 
-```
-tiptap-demo/
-├── src/
-│   ├── components/
-│   │   ├── Editor/
-│   │   │   └── TiptapEditor.tsx     # Main editor component
-│   │   ├── Icons/                   # Icon components
-│   │   ├── Menus/
-│   │   │   ├── EditorBubbleMenu.tsx # Selection-based menu
-│   │   │   └── EditorFloatingMenu.tsx # Empty paragraph menu
-│   │   └── Toolbar/
-│   │       ├── EditorToolbar.tsx    # Main formatting toolbar
-│   │       └── MarkdownControls.tsx # Markdown import/export controls
-│   ├── extensions/
-│   │   └── tiptap-extensions-minimal.ts # TipTap extensions config
-│   ├── hooks/                       # Custom React hooks
-│   ├── styles/                      # CSS and style utilities
-│   ├── utils/
-│   │   ├── markdown.ts             # Markdown conversion utilities
-│   │   └── storage.ts              # LocalStorage utilities
-│   ├── App.tsx                     # Main application component
-│   └── main.tsx                    # Application entry point
-├── public/                         # Static assets
-├── index.html                      # HTML template
-├── tailwind.config.js              # Tailwind CSS configuration
-├── tsconfig.json                   # TypeScript configuration
-└── vite.config.ts                  # Vite configuration
-```
+- Text (paragraph)
+- Headings (H1, H2)
+- Lists (Bullet, Numbered)
+- Blockquote
+- Code Block
+- Horizontal Rule
+- AI Prompt (coming soon)
 
-## Key Technologies Used
+## 📄 License
 
-- **[TipTap](https://tiptap.dev/)** - Headless WYSIWYG editor framework
-- **[React](https://reactjs.org/)** - UI framework
-- **[TypeScript](https://www.typescriptlang.org/)** - Type safety
-- **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
-- **[Vite](https://vitejs.dev/)** - Next generation frontend tooling
-- **[Lucide Icons](https://lucide.dev/)** - Beautiful open-source icons
-- **[Markdown-it](https://github.com/markdown-it/markdown-it)** - Markdown parsing
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Deployment
+## 🙏 Acknowledgments
 
-This project is deployed on Vercel. You can view the live demo at [https://tiptap-demo-deankeesey.vercel.app](https://tiptap-demo-deankeesey.vercel.app).
-
-### Deployment Steps
-
-1. Connect your GitHub repository to Vercel
-2. Configure the build settings:
-   - Build Command: `npm run build`
-   - Output Directory: `dist`
-3. Deploy
-
-## Feature Implementation Details
-
-### Rich Text Editing
-
-The core editor functionality is implemented using TipTap extensions, with a clean separation of concerns between the editor instance, UI components, and utility functions.
-
-### Contextual Menus
-
-The editor provides two types of contextual menus:
-- **Bubble Menu**: Appears when text is selected, offering inline formatting options
-- **Floating Menu**: Appears when the cursor is in an empty paragraph, offering block-level formatting options
-
-### Markdown Support
-
-Markdown import/export is implemented through utilities that convert between HTML and Markdown formats. The user can:
-- Import Markdown files
-- Export current content as Markdown
-- View the Markdown representation of the content
-- Download the content as a Markdown file
-
-### Persistence
-
-The editor content is automatically saved to the browser's localStorage, ensuring that user edits persist between sessions.
-
-## License
-
-MIT
+- Thanks to the [TipTap](https://tiptap.dev/) team for creating an amazing editor framework
+- Inspired by the collaborative editing experience in products like Notion and Wordware

@@ -1,12 +1,20 @@
 import React, { useState, useEffect, Suspense } from 'react'
 import { saveContent, loadContent, getDefaultContent } from './utils/storage'
+import { CollaborationProvider } from './context/CollaborationContext'
+import UserPresence from './components/Editor/UserPresence'
 
-// Lazy load the TiptapEditor component
+// Import styles for collaboration
+import './styles/collaboration.css'
+
+// Lazy load the TiptapEditor components
 const TiptapEditor = React.lazy(() => import('./components/Editor/TiptapEditor'))
+const CollaborativeTiptapEditor = React.lazy(() => import('./components/Editor/CollaborativeTiptapEditor'))
 
 function App() {
   const [editorContent, setEditorContent] = useState('')
   const [isLoading, setIsLoading] = useState(true)
+  const [isCollaborationEnabled, setIsCollaborationEnabled] = useState(false)
+  const [roomName, setRoomName] = useState('tiptap-demo-default-room')
 
   // Load content from localStorage on initial render
   useEffect(() => {
@@ -19,6 +27,13 @@ function App() {
   const handleEditorChange = (content: string) => {
     setEditorContent(content)
     saveContent(content)
+  }
+
+  // Generate a new room name for collaboration
+  const generateNewRoom = () => {
+    const newRoom = `tiptap-demo-room-${Math.floor(Math.random() * 1000)}`
+    setRoomName(newRoom)
+    return newRoom
   }
 
   if (isLoading) {
@@ -64,16 +79,60 @@ function App() {
 
       <main className="flex-1 py-6">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Collaboration toggle */}
+          <div className="mb-4 p-4 bg-white shadow-sm rounded-lg border border-gray-200 flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-medium text-gray-900">Collaboration Mode</h2>
+              <p className="text-sm text-gray-500">
+                {isCollaborationEnabled 
+                  ? `Currently in collaborative mode. Share room name: ${roomName}` 
+                  : 'Enable to collaborate with others in real-time'}
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              {isCollaborationEnabled && (
+                <button 
+                  onClick={() => {
+                    const newRoom = generateNewRoom()
+                    alert(`Created new room: ${newRoom}\nShare this room name with others to collaborate.`)
+                  }}
+                  className="px-3 py-1 text-sm bg-white text-blue-600 border border-blue-600 rounded hover:bg-blue-50"
+                >
+                  New Room
+                </button>
+              )}
+              <label className="inline-flex items-center cursor-pointer">
+                <span className="mr-3 text-sm font-medium text-gray-900">
+                  {isCollaborationEnabled ? 'On' : 'Off'}
+                </span>
+                <input 
+                  type="checkbox" 
+                  checked={isCollaborationEnabled} 
+                  onChange={(e) => setIsCollaborationEnabled(e.target.checked)}
+                  className="sr-only peer" 
+                />
+                <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+          </div>
+
           <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
             <Suspense fallback={
               <div className="p-8 flex items-center justify-center">
                 <div className="text-gray-500">Loading editor components...</div>
               </div>
             }>
-              <TiptapEditor 
-                content={editorContent} 
-                onChange={handleEditorChange}
-              />
+              {isCollaborationEnabled ? (
+                <CollaborationProvider roomName={roomName}>
+                  <UserPresence />
+                  <CollaborativeTiptapEditor onChange={handleEditorChange} />
+                </CollaborationProvider>
+              ) : (
+                <TiptapEditor 
+                  content={editorContent} 
+                  onChange={handleEditorChange}
+                />
+              )}
             </Suspense>
           </div>
           
@@ -97,6 +156,12 @@ function App() {
                 <h3 className="font-medium mb-1">Persistence</h3>
                 <p>Content is automatically saved to localStorage as you type.</p>
               </div>
+              {isCollaborationEnabled && (
+                <div>
+                  <h3 className="font-medium mb-1">Real-time Collaboration</h3>
+                  <p>See other users' cursors and edits in real-time. Changes sync automatically when online.</p>
+                </div>
+              )}
             </div>
           </div>
           
@@ -107,6 +172,24 @@ function App() {
               {editorContent}
             </pre>
           </div>
+          
+          {/* Collaboration Info */}
+          {isCollaborationEnabled && (
+            <div className="mt-6 p-4 bg-white shadow-sm rounded-lg border border-gray-200">
+              <h2 className="text-lg font-medium text-gray-900 mb-2">Collaboration Information</h2>
+              <div className="text-sm text-gray-700 space-y-2">
+                <p>
+                  <span className="font-medium">Current Room:</span> {roomName}
+                </p>
+                <p>
+                  <span className="font-medium">How to Collaborate:</span> Share this room name with others and have them enable collaboration mode with the same room name.
+                </p>
+                <p>
+                  <span className="font-medium">Technology:</span> This collaborative editor uses Y.js for conflict-free real-time editing and WebSockets for communication.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </main>
 
