@@ -2,9 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .prose {
+    @apply max-w-none;
+  }
+}
+
 /* Custom Editor Styles */
 .ProseMirror {
-  @apply p-4 min-h-[200px] outline-none prose max-w-none;
+  @apply p-4 min-h-[200px] outline-none prose;
 }
 
 .ProseMirror p.is-editor-empty:first-child::before {

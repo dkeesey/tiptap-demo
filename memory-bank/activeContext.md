@@ -13,6 +13,7 @@ As of April 22, 2025, the active focus is on:
 - Created basic project structure with React and TipTap (April 22, 2025)
 - Implemented core editor with toolbar, bubble menu, and floating menu (April 22, 2025)
 - Added document persistence with localStorage (April 22, 2025)
+- Added Tailwind Typography plugin for proper styling (April 22, 2025)
 
 ## Current Priorities
 1. **P0**: Test the initial implementation to ensure all basic features work
@@ -33,6 +34,7 @@ As of April 22, 2025, the active focus is on:
 - Consider adding collaborative editing features if time permits
 
 ## Blockers and Challenges
+- Styling issues that require additional Tailwind plugins (resolved with Typography plugin)
 - Local testing to ensure editor works as expected
 - GitHub repository setup
 - Vercel deployment configuration
@@ -47,6 +49,11 @@ As of April 22, 2025, the active focus is on:
 - The editor requires three key components: editor, toolbar, and menus
 - Document persistence can be easily implemented with localStorage
 - The headless nature of TipTap allows for complete UI customization
+- Tailwind Typography plugin is essential for proper rich text styling
+- TipTap uses a component-based architecture with intuitive UI elements
+- Wordware uses TipTap specifically for collaborative editing of AI prompts
+- The editor's state can be queried to determine active formatting
+- Extensions can be configured with options to customize behavior
 
 ## Active Branches and Changes
 - Main branch: Initial implementation

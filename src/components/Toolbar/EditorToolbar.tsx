@@ -1,22 +1,6 @@
+import React from 'react'
 import { Editor } from '@tiptap/react'
-import { 
-  Bold, 
-  Italic, 
-  Underline, 
-  Heading1, 
-  Heading2, 
-  List, 
-  ListOrdered, 
-  AlignLeft, 
-  AlignCenter, 
-  AlignRight, 
-  Highlighter, 
-  Quote, 
-  Undo, 
-  Redo,
-  Image,
-  Link
-} from 'lucide-react'
+import IconComponent from '../Icons/DynamicIcon'
 
 interface EditorToolbarProps {
   editor: Editor
@@ -36,7 +20,7 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
         }`}
         title="Bold"
       >
-        <Bold size={18} />
+        <IconComponent name="Bold" />
       </button>
       
       <button
@@ -46,7 +30,7 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
         }`}
         title="Italic"
       >
-        <Italic size={18} />
+        <IconComponent name="Italic" />
       </button>
       
       <button
@@ -56,7 +40,7 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
         }`}
         title="Underline"
       >
-        <Underline size={18} />
+        <IconComponent name="Underline" />
       </button>
       
       <div className="w-px h-6 bg-gray-200 mx-1"></div>
@@ -68,7 +52,7 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
         }`}
         title="Heading 1"
       >
-        <Heading1 size={18} />
+        <IconComponent name="Heading1" />
       </button>
       
       <button
@@ -78,7 +62,7 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
         }`}
         title="Heading 2"
       >
-        <Heading2 size={18} />
+        <IconComponent name="Heading2" />
       </button>
       
       <div className="w-px h-6 bg-gray-200 mx-1"></div>
@@ -90,7 +74,7 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
         }`}
         title="Bullet List"
       >
-        <List size={18} />
+        <IconComponent name="List" />
       </button>
       
       <button
@@ -100,7 +84,7 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
         }`}
         title="Ordered List"
       >
-        <ListOrdered size={18} />
+        <IconComponent name="ListOrdered" />
       </button>
       
       <div className="w-px h-6 bg-gray-200 mx-1"></div>
@@ -112,7 +96,7 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
         }`}
         title="Align Left"
       >
-        <AlignLeft size={18} />
+        <IconComponent name="AlignLeft" />
       </button>
       
       <button
@@ -122,7 +106,7 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
         }`}
         title="Align Center"
       >
-        <AlignCenter size={18} />
+        <IconComponent name="AlignCenter" />
       </button>
       
       <button
@@ -132,7 +116,7 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
         }`}
         title="Align Right"
       >
-        <AlignRight size={18} />
+        <IconComponent name="AlignRight" />
       </button>
       
       <div className="w-px h-6 bg-gray-200 mx-1"></div>
@@ -144,7 +128,7 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
         }`}
         title="Highlight"
       >
-        <Highlighter size={18} />
+        <IconComponent name="Highlighter" />
       </button>
       
       <button
@@ -154,7 +138,7 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
         }`}
         title="Blockquote"
       >
-        <Quote size={18} />
+        <IconComponent name="Quote" />
       </button>
       
       <button
@@ -167,7 +151,7 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
         className="p-2 rounded hover:bg-editor-toolbar-button-backgroundHover text-editor-toolbar-button-icon"
         title="Insert Image"
       >
-        <Image size={18} />
+        <IconComponent name="Image" />
       </button>
       
       <button
@@ -194,7 +178,7 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
         }`}
         title="Link"
       >
-        <Link size={18} />
+        <IconComponent name="Link" />
       </button>
       
       <div className="w-px h-6 bg-gray-200 mx-1"></div>
@@ -207,7 +191,7 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
         } text-editor-toolbar-button-icon`}
         title="Undo"
       >
-        <Undo size={18} />
+        <IconComponent name="Undo" />
       </button>
       
       <button
@@ -218,7 +202,7 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
         } text-editor-toolbar-button-icon`}
         title="Redo"
       >
-        <Redo size={18} />
+        <IconComponent name="Redo" />
       </button>
     </div>
   )

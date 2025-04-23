@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react'
-import TiptapEditor from './components/Editor/TiptapEditor'
+import React, { useState, useEffect, Suspense } from 'react'
 import { saveContent, loadContent, getDefaultContent } from './utils/storage'
+
+// Lazy load the TiptapEditor component
+const TiptapEditor = React.lazy(() => import('./components/Editor/TiptapEditor'))
 
 function App() {
   const [editorContent, setEditorContent] = useState('')
@@ -63,10 +65,16 @@ function App() {
       <main className="flex-1 py-6">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
-            <TiptapEditor 
-              content={editorContent} 
-              onChange={handleEditorChange}
-            />
+            <Suspense fallback={
+              <div className="p-8 flex items-center justify-center">
+                <div className="text-gray-500">Loading editor components...</div>
+              </div>
+            }>
+              <TiptapEditor 
+                content={editorContent} 
+                onChange={handleEditorChange}
+              />
+            </Suspense>
           </div>
           
           {/* Optional: Preview Panel */}

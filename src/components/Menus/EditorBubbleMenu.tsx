@@ -1,16 +1,6 @@
+import React from 'react'
 import { BubbleMenu, Editor } from '@tiptap/react'
-import { 
-  Bold, 
-  Italic, 
-  Underline, 
-  Heading1, 
-  Heading2, 
-  Link, 
-  Highlighter,
-  AlignLeft,
-  AlignCenter,
-  AlignRight
-} from 'lucide-react'
+import IconComponent from '../Icons/DynamicIcon'
 
 interface EditorBubbleMenuProps {
   editor: Editor
@@ -34,7 +24,7 @@ const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
         }`}
         title="Bold"
       >
-        <Bold size={14} />
+        <IconComponent name="Bold" size={14} />
       </button>
 
       <button
@@ -44,7 +34,7 @@ const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
         }`}
         title="Italic"
       >
-        <Italic size={14} />
+        <IconComponent name="Italic" size={14} />
       </button>
 
       <button
@@ -54,7 +44,7 @@ const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
         }`}
         title="Underline"
       >
-        <Underline size={14} />
+        <IconComponent name="Underline" size={14} />
       </button>
 
       <div className="w-px h-5 bg-gray-200 mx-0.5"></div>
@@ -66,7 +56,7 @@ const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
         }`}
         title="Heading 1"
       >
-        <Heading1 size={14} />
+        <IconComponent name="Heading1" size={14} />
       </button>
 
       <button
@@ -76,7 +66,7 @@ const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
         }`}
         title="Heading 2"
       >
-        <Heading2 size={14} />
+        <IconComponent name="Heading2" size={14} />
       </button>
 
       <div className="w-px h-5 bg-gray-200 mx-0.5"></div>
@@ -88,7 +78,7 @@ const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
         }`}
         title="Align Left"
       >
-        <AlignLeft size={14} />
+        <IconComponent name="AlignLeft" size={14} />
       </button>
 
       <button
@@ -98,7 +88,7 @@ const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
         }`}
         title="Align Center"
       >
-        <AlignCenter size={14} />
+        <IconComponent name="AlignCenter" size={14} />
       </button>
 
       <button
@@ -108,7 +98,7 @@ const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
         }`}
         title="Align Right"
       >
-        <AlignRight size={14} />
+        <IconComponent name="AlignRight" size={14} />
       </button>
 
       <div className="w-px h-5 bg-gray-200 mx-0.5"></div>
@@ -137,7 +127,7 @@ const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
         }`}
         title="Link"
       >
-        <Link size={14} />
+        <IconComponent name="Link" size={14} />
       </button>
 
       <button
@@ -147,7 +137,7 @@ const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
         }`}
         title="Highlight"
       >
-        <Highlighter size={14} />
+        <IconComponent name="Highlighter" size={14} />
       </button>
     </BubbleMenu>
   )

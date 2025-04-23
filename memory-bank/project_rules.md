@@ -19,6 +19,7 @@
 - Maintain consistent spacing and typography
 - Ensure responsive design across device sizes
 - Use CSS variables for theming when appropriate
+- Include the Tailwind Typography plugin for rich text styling
 
 ### State Management
 - Use React context for editor state when necessary
@@ -99,14 +100,44 @@
 - The extension system is central to TipTap's architecture
 - TipTap is "headless" - it provides functionality but no UI
 - The React integration simplifies binding to React components
+- TipTap's component hierarchy involves three main components: Editor, EditorContent, and extensions
+
+### TipTap Extensions
+- Extensions are modular pieces that add functionality to the editor
+- The StarterKit extension bundle includes most common editing features
+- Custom extensions can be created for specialized functionality
+- Extensions can be configured with options to customize behavior
+- Extensions can be combined and composed to create complex editors
+
+### UI Implementation
+- The bubble menu appears when text is selected
+- The floating menu appears on empty paragraphs
+- Toolbars provide persistent access to editor commands
+- Each menu/toolbar component receives the editor instance as a prop
+- The editor's state can be queried to determine which formatting is active
+
+### Styling Considerations
+- TipTap requires the Tailwind Typography plugin for prose styling
+- Editor content can be styled using standard CSS or Tailwind classes
+- The ProseMirror class is the main entry point for styling editor content
+- Custom styling can be applied to specific node types (headings, lists, etc.)
+- Responsive design requires careful consideration of toolbar layouts
+
+### Document Persistence
+- localStorage provides a simple way to persist editor content
+- The editor's HTML can be accessed via editor.getHTML()
+- Content can be loaded into the editor through the content prop
+- The onUpdate callback is used to capture content changes
 
 ### Wordware Integration
 - Wordware uses TipTap for collaborative editing of AI prompts
-- TipTap's collaboration extensions are likely important to Wordware
-- The demo should highlight features relevant to AI development
+- TipTap's collaboration extensions are particularly relevant for Wordware's use case
+- Understanding how to integrate TipTap with other technologies (like AI) is valuable
+- The clean, extensible nature of TipTap matches Wordware's development philosophy
 
-### Development Insights
-- Start with the official examples and documentation
-- Focus on understanding the extension system
-- Pay attention to editor state management
-- Implement features incrementally
+### Development Workflow
+- Start with official examples and documentation
+- Build incrementally, starting with core functionality
+- Test frequently to catch styling or functionality issues early
+- Use TypeScript for better developer experience and type safety
+- Tailwind CSS provides rapid UI development capabilities
