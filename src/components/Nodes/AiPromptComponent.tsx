@@ -16,7 +16,7 @@ const AiPromptComponent: React.FC<NodeViewProps> = ({ node, updateAttributes, ed
   const promptInputRef = useRef<HTMLTextAreaElement>(null);
   
   // Get AI context
-  const { aiService, settings, isProcessing, setIsProcessing } = useAI();
+  const { aiService, settings, isGenerating, cancelGeneration } = useAI();
   
   // Focus the prompt input when entering edit mode
   useEffect(() => {
@@ -28,7 +28,7 @@ const AiPromptComponent: React.FC<NodeViewProps> = ({ node, updateAttributes, ed
   // Process AI prompt when status is 'loading'
   useEffect(() => {
     if (status === 'loading') {
-      setIsProcessing(true);
+      // Process is tracked by the AIContext internally
       
       const processPrompt = async () => {
         try {
@@ -56,7 +56,7 @@ const AiPromptComponent: React.FC<NodeViewProps> = ({ node, updateAttributes, ed
             result: 'Unable to process this request. Please try rephrasing your prompt or try again later.',
           });
         } finally {
-          setIsProcessing(false);
+          // AIContext will handle the isGenerating state
         }
       };
       

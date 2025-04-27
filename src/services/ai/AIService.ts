@@ -163,4 +163,11 @@ export abstract class BaseAIService implements AIService {
   protected removeAbortController(controller: AbortController): void {
     this.pendingRequests = this.pendingRequests.filter(c => c !== controller);
   }
+  
+  /**
+   * Creates an artificial delay to simulate network requests
+   */
+  protected async delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
 }
