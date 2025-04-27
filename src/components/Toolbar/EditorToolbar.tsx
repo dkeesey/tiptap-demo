@@ -90,7 +90,20 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
       <div className="w-px h-6 bg-gray-200 mx-1"></div>
       
       <button
-        onClick={() => editor.chain().focus().toggleBlockquote().run()}
+        onClick={() => {
+          if (editor.can().toggleBlockquote()) {
+            editor.chain().focus().toggleBlockquote().run();
+          } else if (typeof editor.commands.setBlockquote === 'function') {
+            const isActive = editor.isActive('blockquote');
+            if (isActive) {
+              editor.chain().focus().lift('blockquote').run();
+            } else {
+              editor.chain().focus().setBlockquote().run();
+            }
+          } else {
+            console.error('Blockquote functionality is not available in the editor');
+          }
+        }}
         className={`p-2 rounded hover:bg-gray-100 ${
           editor.isActive('blockquote') ? 'bg-gray-100 text-gray-900' : 'text-gray-600'
         }`}

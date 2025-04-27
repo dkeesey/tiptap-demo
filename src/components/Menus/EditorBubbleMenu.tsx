@@ -20,6 +20,16 @@ const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
       editor={editor}
       tippyOptions={{ duration: 100 }}
       className="bg-white shadow-md border border-gray-200 rounded-md p-1 flex items-center gap-1"
+      shouldShow={({ editor, view, state, from, to }) => {
+        // Only show bubble menu when text is actually selected
+        const { doc, selection } = state;
+        const { empty } = selection;
+        
+        // Don't show menu when selection is empty
+        if (empty) return false;
+        
+        return true;
+      }}
     >
       <button
         onClick={() => editor.chain().focus().toggleBold().run()}

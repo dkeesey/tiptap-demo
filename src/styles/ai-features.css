@@ -1,0 +1,175 @@
+/**
+ * ai-features.css
+ * Styles for AI features in the TipTap editor
+ */
+
+/* AI Sidebar */
+.ai-sidebar {
+  z-index: 50;
+}
+
+.vertical-text {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+}
+
+.ai-insert-success {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #10B981;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  animation: fadeInOut 2s ease-in-out;
+  z-index: 9999;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(10px); }
+  10% { opacity: 1; transform: translateY(0); }
+  90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-10px); }
+}
+
+/* AI Prompt Node */
+.ai-prompt-node {
+  position: relative;
+  transition: all 0.2s ease-in-out;
+}
+
+.ai-prompt-node:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.ai-prompt-status {
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.ai-prompt-actions {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ai-prompt-action-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #e5e7eb;
+  background-color: white;
+  transition: all 0.2s ease;
+}
+
+.ai-prompt-action-button:hover {
+  background-color: #f9fafb;
+}
+
+.ai-prompt-action-button.primary:hover {
+  background-color: #ebf5ff;
+  color: #2563eb;
+}
+
+.ai-prompt-action-button.danger:hover {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+.ai-prompt-response {
+  white-space: pre-wrap;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-top: 8px;
+}
+
+/* AI Actions Menu */
+.ai-actions-menu {
+  display: none; /* Hidden by default, shown by tippy.js */
+}
+
+.ai-actions-menu-content {
+  width: 220px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.tippy-box {
+  border-radius: 6px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* AI Indicator - for showing AI-generated content */
+.ai-generated-text {
+  background-color: rgba(168, 85, 247, 0.08);
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin: 0 -4px;
+  position: relative;
+}
+
+.ai-generated-text::after {
+  content: "✨";
+  position: absolute;
+  top: -8px;
+  right: -4px;
+  font-size: 10px;
+  color: #8b5cf6;
+}
+
+/* Loading indicator */
+.ai-loading-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #8b5cf6;
+  margin: 0 4px;
+}
+
+.ai-loading-indicator svg {
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Typing animation for AI inline suggestions */
+.ai-typing-animation::after {
+  content: '|';
+  animation: cursor-blink 1s step-end infinite;
+}
+
+@keyframes cursor-blink {
+  from, to { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Slash command enhancements for AI */
+.slash-commands-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.slash-command-item.ai {
+  background-color: rgba(168, 85, 247, 0.08);
+}
+
+.slash-command-category {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: #6b7280;
+  padding: 4px 8px;
+  background-color: #f9fafb;
+}

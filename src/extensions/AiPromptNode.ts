@@ -9,7 +9,7 @@ export interface AiPromptOptions {
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     aiPrompt: {
-      setAiPrompt: (options: { prompt?: string; status?: string; result?: string }) => ReturnType;
+      setAiPrompt: (options: { prompt?: string; title?: string; status?: string; result?: string }) => ReturnType;
     };
   }
 }
@@ -32,6 +32,11 @@ export const AiPromptNode = Node.create<AiPromptOptions>({
         default: '',
         parseHTML: element => element.getAttribute('data-prompt'),
         renderHTML: attributes => ({ 'data-prompt': attributes.prompt }),
+      },
+      title: {
+        default: 'AI Prompt',
+        parseHTML: element => element.getAttribute('data-title'),
+        renderHTML: attributes => ({ 'data-title': attributes.title }),
       },
       status: {
         default: 'idle', // 'idle', 'loading', 'success', 'error'

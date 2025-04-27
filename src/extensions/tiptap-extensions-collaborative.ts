@@ -13,6 +13,7 @@ import Underline from '@tiptap/extension-underline'
 import Collaboration from '@tiptap/extension-collaboration'
 import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
 import SlashCommandExtension from './SlashCommandExtension'
+import AiPromptNode from './AiPromptNode'
 import * as Y from 'yjs'
 
 // Types for configuring extensions
@@ -24,7 +25,6 @@ interface CollaborativeExtensionsOptions {
     color: string
     id: string
   }
-  fragment?: Y.XmlFragment
 }
 
 /**
@@ -38,12 +38,22 @@ export const getCollaborativeExtensions = ({
     name: `User ${Math.floor(Math.random() * 100)}`,
     color: '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0'),
     id: `user-${Math.floor(Math.random() * 100000)}`
-  },
-  fragment = ydoc.getXmlFragment('document')
+  }
 }: CollaborativeExtensionsOptions) => [
-  // Core extensions
-  StarterKit.configure({
-    history: false, // Disable built-in history as we'll use Yjs for history/undo
+  // Core TipTap extensions with built-in history and blockquote enabled
+  StarterKit.configure({ 
+    history: false, // Disable built-in history to use Yjs UndoManager
+    blockquote: {
+      HTMLAttributes: {
+        class: 'border-l-4 border-gray-300 pl-4 italic',
+      },
+    }
+  }),
+  
+  // Explicitly define the Collaboration extension first (important for proper sync)
+  Collaboration.configure({ 
+    document: ydoc.getXmlFragment('document') as any,
+    field: 'content', // Field name for storing content
   }),
   
   // Formatting extensions
@@ -69,28 +79,34 @@ export const getCollaborativeExtensions = ({
   // Slash commands
   SlashCommandExtension,
   
-  // Collaboration extensions
-  Collaboration.configure({
-    document: fragment,
-  }),
-  CollaborationCursor.configure({
-    provider,
-    user,
-    render: (user) => {
-      const cursor = document.createElement('span')
-      cursor.classList.add('collaboration-cursor')
-      cursor.setAttribute('style', `border-color: ${user.color}`)
-      
-      const label = document.createElement('div')
-      label.classList.add('collaboration-cursor-label')
-      label.setAttribute('style', `background-color: ${user.color}`)
-      label.innerHTML = user.name
-      
-      cursor.appendChild(label)
-      
-      return { cursor, label }
+  // Custom nodes
+  AiPromptNode.configure({
+    HTMLAttributes: {
+      class: 'ai-prompt-node',
     },
   }),
+  
+  // Only include collaboration cursor when provider is available
+  ...(provider ? [
+    CollaborationCursor.configure({ 
+      provider, 
+      user, 
+      render: (user) => {
+        const cursor = document.createElement('span')
+        cursor.classList.add('collaboration-cursor')
+        cursor.setAttribute('style', `border-color: ${user.color}`)
+        
+        const label = document.createElement('div')
+        label.classList.add('collaboration-cursor-label')
+        label.setAttribute('style', `background-color: ${user.color}`)
+        label.textContent = user.name
+        
+        cursor.appendChild(label)
+        
+        return cursor
+      } 
+    })
+  ] : []),
 ]
 
 export {
@@ -104,4 +120,5 @@ export {
   Collaboration,
   CollaborationCursor,
   SlashCommandExtension,
+  AiPromptNode,
 }

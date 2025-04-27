@@ -6,6 +6,88 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="TipTap Editor Demo for Wordware - A showcase of TipTap's capabilities">
     <title>TipTap Editor Demo</title>
+    <script>
+      // Override console methods to filter out Y.js noise
+      const originalConsoleLog = console.log;
+      const originalConsoleWarn = console.warn;
+      const originalConsoleError = console.error;
+      const originalConsoleInfo = console.info;
+      const originalConsoleDebug = console.debug;
+      
+      // Keywords to ignore
+      const ignorePatterns = [
+        'yjs',
+        'y-websocket',
+        'syncedstore',
+        'awareness',
+        'ydoc',
+        'provider',
+        'prosemirror',
+        'tiptap',
+        'peerjs',
+        'collab',
+        'yarray',
+        'ymap',
+        'ywsconnection'
+      ];
+      
+      // Check if a message contains any of the ignore patterns
+      const shouldIgnore = (args) => {
+        if (!args || args.length === 0) return false;
+        
+        const message = JSON.stringify(args).toLowerCase();
+        return ignorePatterns.some(pattern => message.includes(pattern));
+      };
+      
+      // Add rate limiting for console methods
+      let logCounter = 0;
+      const maxLogsPerSecond = 10;
+      let lastResetTime = Date.now();
+      
+      // Function to check and reset rate limits
+      const checkRateLimit = () => {
+        const now = Date.now();
+        // Reset counter every second
+        if (now - lastResetTime > 1000) {
+          logCounter = 0;
+          lastResetTime = now;
+        }
+        
+        logCounter++;
+        return logCounter <= maxLogsPerSecond;
+      };
+      
+      // Override console methods to filter out messages
+      console.log = function() {
+        if (!shouldIgnore(arguments) && checkRateLimit()) {
+          originalConsoleLog.apply(console, arguments);
+        }
+      };
+      
+      console.warn = function() {
+        if (!shouldIgnore(arguments) && checkRateLimit()) {
+          originalConsoleWarn.apply(console, arguments);
+        }
+      };
+      
+      console.error = function() {
+        if (!shouldIgnore(arguments) && checkRateLimit()) {
+          originalConsoleError.apply(console, arguments);
+        }
+      };
+      
+      console.info = function() {
+        if (!shouldIgnore(arguments) && checkRateLimit()) {
+          originalConsoleInfo.apply(console, arguments);
+        }
+      };
+      
+      console.debug = function() {
+        if (!shouldIgnore(arguments) && checkRateLimit()) {
+          originalConsoleDebug.apply(console, arguments);
+        }
+      };
+    </script>
   </head>
   <body>
     <div id="root"></div>
