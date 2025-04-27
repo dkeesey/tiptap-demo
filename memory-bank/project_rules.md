@@ -1,5 +1,149 @@
 # TipTap Demo - Project Rules and Intelligence
 
+## Taskmaster System for Cursor
+
+### Overview
+The TipTap demo project uses a taskmaster system for tracking task status, priorities, and progress. This system is set up in `~/Workspace/tiptap-demo/` and consists of configuration files and task definitions organized by category.
+
+### Taskmaster Structure
+1. **Main configuration**: `~/Workspace/tiptap-demo/taskmaster.json`
+   - Defines categories, status options, and priorities
+   - Sets default values for new tasks
+
+2. **Task files**: Located in `~/Workspace/tiptap-demo/tasks/`
+   - `ai-features.json`: AI integration tasks
+   - `ui-enhancements.json`: UI improvement tasks
+   - `debugging.json`: Bug fixes and debugging tools
+   - `collaboration.json`: Collaborative editing features
+   - `documentation.json`: Documentation and presentation materials
+
+### Task Properties
+Each task has the following properties:
+- `id`: Unique identifier for the task
+- `title`: Descriptive title
+- `description`: Detailed explanation of the task
+- `category`: Category for organization
+- `status`: Current status (todo, in-progress, review, done)
+- `priority`: Importance level (low, medium, high, critical)
+- `due`: Due date for completion
+- `subtasks`: List of smaller tasks within the main task
+
+### Viewing Tasks
+To view the current task list and status:
+
+```bash
+cd ~/Workspace/tiptap-demo
+npm run taskmaster
+```
+
+This will display an interactive interface showing all tasks organized by category.
+
+### Updating Task Status
+Use the `update-task-status.js` script to update task status from the command line:
+
+```bash
+cd ~/Workspace/tiptap-demo
+node update-task-status.js [task-id] [new-status]
+```
+
+Example:
+```bash
+node update-task-status.js ai-sidebar in-progress
+```
+
+Valid status options:
+- `todo`: Not started
+- `in-progress`: Currently being worked on
+- `review`: Completed but needs review
+- `done`: Completed and verified
+
+### Task Update Guidelines
+When updating tasks, follow these guidelines:
+
+1. **Starting work on a task**:
+   - Update status to `in-progress`
+   - Create a Git commit with the task ID in the message
+
+2. **Completing work on a task**:
+   - Update status to `review` if it needs verification
+   - Update status to `done` if completely finished
+   - Create a Git commit with details about the implementation
+
+3. **Commit message format**:
+   ```
+   [task-id] - Brief description of work
+   
+   - Details of what was implemented
+   - Changes made to the system
+   - Any remaining issues
+   
+   Status: [new-status]
+   ```
+
+### Task Coordination with Claude
+To coordinate work with Claude:
+
+1. **Handoff format** when completing a task:
+   ```
+   ## Handoff: [task-id] - [task title]
+   
+   ### Implementation Status
+   - Current status: [in-progress/review/done]
+   - Implementation progress: [percentage]
+   
+   ### Completed Items
+   - [List of completed items]
+   
+   ### Pending Items
+   - [List of remaining work needed]
+   
+   ### Integration Notes
+   - [How to integrate with other components]
+   
+   ### Known Issues
+   - [Any known bugs or limitations]
+   
+   ### Next Steps
+   - [Instructions for the next steps]
+   ```
+
+2. **Priority focus**:
+   - High-priority tasks for the April 28 presentation
+   - Tasks marked as blocking others
+   - Tasks that Claude has provided initial implementations for
+
+### Relationship to Global Taskmaster
+This taskmaster setup is specific to the TipTap demo project and is a localized version of the global taskmaster setup in `~/Workspace/tools/`. While they share similar concepts, the TipTap taskmaster is configured specifically for this project's needs and timeline.
+
+If you need to access the global taskmaster system, it's available in `~/Workspace/tools/`, but for all TipTap demo work, use the local system in `~/Workspace/tiptap-demo/`.
+
+### Project Timeline
+All tasks should be completed by **April 27, 2025**, to allow for final testing before the Wordware presentation on **April 28, 2025**.
+
+Priority order:
+1. Debugging and WebSocket issues
+2. Core AI feature implementation
+3. UI enhancements
+4. Documentation and presentation preparation
+
+### Example Task Update Workflow
+```bash
+# Check task status
+cd ~/Workspace/tiptap-demo
+npm run taskmaster
+
+# Update task to in-progress
+node update-task-status.js ai-sidebar in-progress
+
+# After implementing, update to review
+node update-task-status.js ai-sidebar review
+
+# After verification, mark as done
+node update-task-status.js ai-sidebar done
+```
+
+Always document your work in Git commits using the specified format.
+
 ## Collaborative Editing Architecture
 
 ### Real-time Collaboration Implementation
