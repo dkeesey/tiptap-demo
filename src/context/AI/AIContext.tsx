@@ -1,143 +1,353 @@
 /**
  * AIContext.tsx
- * Provides AI service and state management for the application.
+ * React context provider for AI functionality
  */
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import { AIService, AISettings, AIInteraction } from '../../services/ai/AIService';
-import { mockAIService } from '../../services/ai/MockAIService';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
+import { AIService, AIServiceOptions, AIServiceResponse, AIRequest } from '../../services/ai/AIService';
+import { MockAIService } from '../../services/ai/MockAIService';
 
-// Define the context type
-interface AIContextType {
-  aiService: AIService;
-  settings: AISettings;
-  updateSettings: (settings: Partial<AISettings>) => void;
-  history: AIInteraction[];
-  addToHistory: (prompt: string, response: string) => void;
-  rateInteraction: (id: string, rating: 'positive' | 'negative') => void;
-  clearHistory: () => void;
-  isProcessing: boolean;
-  setIsProcessing: (isProcessing: boolean) => void;
+export interface AISettings {
+  enabled: boolean;
+  model: string;
+  temperature: number;
+  maxTokens: number;
+  autoSuggest: boolean;
+  suggestThreshold: number; // 0-1, how confident the AI needs to be to suggest
+  showGenerationDetails: boolean;
 }
 
-// Create the context with default values
-export const AIContext = createContext<AIContextType>({
-  aiService: mockAIService,
-  settings: {
-    provider: 'mock',
-    model: 'default',
-    temperature: 0.7,
-    maxTokens: 150,
-    responseLength: 'medium'
-  },
-  updateSettings: () => {},
-  history: [],
-  addToHistory: () => {},
-  rateInteraction: () => {},
-  clearHistory: () => {},
-  isProcessing: false,
-  setIsProcessing: () => {}
-});
+export interface AIInteraction {
+  id: string;
+  type: 'completion' | 'edit' | 'analysis';
+  input: string;
+  output: string;
+  timestamp: number;
+  metadata?: Record<string, any>;
+}
 
-// Custom hook for using the AI context
-export const useAI = () => useContext(AIContext);
+export interface AIContextValue {
+  // AI Service
+  aiService: AIService;
+  
+  // Settings
+  settings: AISettings;
+  updateSettings: (settings: Partial<AISettings>) => void;
+  
+  // Interaction history
+  history: AIInteraction[];
+  clearHistory: () => void;
+  
+  // AI state
+  isGenerating: boolean;
+  lastError: Error | null;
+  
+  // Convenience methods
+  generateCompletion: (prompt: string, options?: AIServiceOptions) => Promise<AIServiceResponse>;
+  generateEdit: (input: string, instruction: string, options?: AIServiceOptions) => Promise<AIServiceResponse>;
+  analyzeText: (content: string, analysisType: string, options?: AIServiceOptions) => Promise<AIServiceResponse>;
+  processRequest: (request: AIRequest) => Promise<AIServiceResponse>;
+  cancelGeneration: () => void;
+}
+
+// Default settings
+const DEFAULT_SETTINGS: AISettings = {
+  enabled: true,
+  model: 'default',
+  temperature: 0.7,
+  maxTokens: 500,
+  autoSuggest: true,
+  suggestThreshold: 0.8,
+  showGenerationDetails: false
+};
+
+// Create the context
+export const AIContext = createContext<AIContextValue | null>(null);
+
+// Hook for using the AI context
+export const useAI = () => {
+  const context = useContext(AIContext);
+  if (!context) {
+    throw new Error('useAI must be used within an AIProvider');
+  }
+  return context;
+};
 
 interface AIProviderProps {
   children: ReactNode;
+  initialSettings?: Partial<AISettings>;
+  customAIService?: AIService;
 }
 
-export const AIProvider: React.FC<AIProviderProps> = ({ children }) => {
-  // Initialize settings from localStorage or defaults
-  const [settings, setSettings] = useState<AISettings>(() => {
-    const savedSettings = localStorage.getItem('aiSettings');
-    return savedSettings
-      ? JSON.parse(savedSettings)
-      : {
-          provider: 'mock',
-          model: 'default',
-          temperature: 0.7,
-          maxTokens: 150,
-          responseLength: 'medium'
-        };
+export const AIProvider: React.FC<AIProviderProps> = ({ 
+  children, 
+  initialSettings,
+  customAIService
+}) => {
+  // Initialize with merged settings
+  const [settings, setSettings] = useState<AISettings>({
+    ...DEFAULT_SETTINGS,
+    ...initialSettings
   });
-
-  // Initialize history from localStorage or empty array
-  const [history, setHistory] = useState<AIInteraction[]>(() => {
-    const savedHistory = localStorage.getItem('aiHistory');
-    return savedHistory ? JSON.parse(savedHistory) : [];
-  });
-
-  // Track processing state
-  const [isProcessing, setIsProcessing] = useState<boolean>(false);
-
-  // Save settings to localStorage when they change
-  useEffect(() => {
-    localStorage.setItem('aiSettings', JSON.stringify(settings));
-  }, [settings]);
-
-  // Save history to localStorage when it changes
-  useEffect(() => {
-    localStorage.setItem('aiHistory', JSON.stringify(history));
-  }, [history]);
-
+  
+  // Initialize AI service
+  const [aiService] = useState<AIService>(() => customAIService || new MockAIService({
+    model: settings.model,
+    temperature: settings.temperature,
+    maxTokens: settings.maxTokens
+  }));
+  
+  // State for AI processing
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [lastError, setLastError] = useState<Error | null>(null);
+  
+  // History of AI interactions
+  const [history, setHistory] = useState<AIInteraction[]>([]);
+  
   // Update settings
-  const updateSettings = (newSettings: Partial<AISettings>) => {
-    setSettings(prevSettings => ({
-      ...prevSettings,
-      ...newSettings
-    }));
-  };
-
-  // Add an interaction to history
-  const addToHistory = (prompt: string, response: string) => {
-    const newInteraction: AIInteraction = {
-      id: uuidv4(),
-      prompt,
-      response,
-      timestamp: Date.now()
-    };
-
-    setHistory(prevHistory => [...prevHistory, newInteraction]);
-  };
-
-  // Rate an interaction
-  const rateInteraction = (id: string, rating: 'positive' | 'negative') => {
-    setHistory(prevHistory =>
-      prevHistory.map(interaction =>
-        interaction.id === id
-          ? { ...interaction, rating }
-          : interaction
-      )
-    );
-  };
-
+  const updateSettings = useCallback((newSettings: Partial<AISettings>) => {
+    setSettings(prev => ({ ...prev, ...newSettings }));
+  }, []);
+  
   // Clear history
-  const clearHistory = () => {
-    if (confirm('Are you sure you want to clear your AI interaction history?')) {
-      setHistory([]);
+  const clearHistory = useCallback(() => {
+    setHistory([]);
+  }, []);
+  
+  // Generate completion with error handling and history tracking
+  const generateCompletion = useCallback(async (
+    prompt: string, 
+    options?: AIServiceOptions
+  ): Promise<AIServiceResponse> => {
+    if (!settings.enabled) {
+      throw new Error('AI features are disabled');
     }
-  };
-
-  // Determine which AI service to use based on settings
-  const getAIService = (): AIService => {
-    // For now, always return the mock service
-    // In a production app, this would switch between different implementations
-    return mockAIService;
-  };
-
-  const contextValue: AIContextType = {
-    aiService: getAIService(),
+    
+    setIsGenerating(true);
+    setLastError(null);
+    
+    try {
+      const mergedOptions = {
+        temperature: settings.temperature,
+        maxTokens: settings.maxTokens,
+        model: settings.model,
+        ...options
+      };
+      
+      const response = await aiService.generateCompletion(prompt, mergedOptions);
+      
+      // Add to history
+      const interaction: AIInteraction = {
+        id: Date.now().toString(),
+        type: 'completion',
+        input: prompt,
+        output: response.content,
+        timestamp: Date.now(),
+        metadata: {
+          ...response.metadata,
+          options: mergedOptions,
+          usage: response.usage
+        }
+      };
+      
+      setHistory(prev => [interaction, ...prev]);
+      
+      return response;
+    } catch (error) {
+      setLastError(error as Error);
+      throw error;
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [aiService, settings]);
+  
+  // Generate edit with error handling and history tracking
+  const generateEdit = useCallback(async (
+    input: string,
+    instruction: string,
+    options?: AIServiceOptions
+  ): Promise<AIServiceResponse> => {
+    if (!settings.enabled) {
+      throw new Error('AI features are disabled');
+    }
+    
+    setIsGenerating(true);
+    setLastError(null);
+    
+    try {
+      const mergedOptions = {
+        temperature: settings.temperature,
+        maxTokens: settings.maxTokens,
+        model: settings.model,
+        ...options
+      };
+      
+      const response = await aiService.generateEdit(input, instruction, mergedOptions);
+      
+      // Add to history
+      const interaction: AIInteraction = {
+        id: Date.now().toString(),
+        type: 'edit',
+        input: `${input} [Instruction: ${instruction}]`,
+        output: response.content,
+        timestamp: Date.now(),
+        metadata: {
+          ...response.metadata,
+          instruction,
+          options: mergedOptions,
+          usage: response.usage
+        }
+      };
+      
+      setHistory(prev => [interaction, ...prev]);
+      
+      return response;
+    } catch (error) {
+      setLastError(error as Error);
+      throw error;
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [aiService, settings]);
+  
+  // Analyze text with error handling and history tracking
+  const analyzeText = useCallback(async (
+    content: string,
+    analysisType: string,
+    options?: AIServiceOptions
+  ): Promise<AIServiceResponse> => {
+    if (!settings.enabled) {
+      throw new Error('AI features are disabled');
+    }
+    
+    setIsGenerating(true);
+    setLastError(null);
+    
+    try {
+      const mergedOptions = {
+        temperature: settings.temperature,
+        maxTokens: settings.maxTokens,
+        model: settings.model,
+        ...options
+      };
+      
+      const response = await aiService.analyzeText(content, analysisType, mergedOptions);
+      
+      // Add to history
+      const interaction: AIInteraction = {
+        id: Date.now().toString(),
+        type: 'analysis',
+        input: `[${analysisType}] ${content.substring(0, 100)}${content.length > 100 ? '...' : ''}`,
+        output: response.content,
+        timestamp: Date.now(),
+        metadata: {
+          ...response.metadata,
+          analysisType,
+          options: mergedOptions,
+          usage: response.usage
+        }
+      };
+      
+      setHistory(prev => [interaction, ...prev]);
+      
+      return response;
+    } catch (error) {
+      setLastError(error as Error);
+      throw error;
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [aiService, settings]);
+  
+  // Process any AI request
+  const processRequest = useCallback(async (request: AIRequest): Promise<AIServiceResponse> => {
+    if (!settings.enabled) {
+      throw new Error('AI features are disabled');
+    }
+    
+    setIsGenerating(true);
+    setLastError(null);
+    
+    try {
+      const response = await aiService.processRequest(request);
+      
+      // Add to history
+      const interaction: AIInteraction = {
+        id: Date.now().toString(),
+        type: request.type,
+        input: request.type === 'completion' 
+          ? request.prompt 
+          : request.type === 'edit'
+            ? `${request.input} [${request.instruction}]`
+            : request.content,
+        output: response.content,
+        timestamp: Date.now(),
+        metadata: {
+          ...response.metadata,
+          requestType: request.type,
+          usage: response.usage
+        }
+      };
+      
+      setHistory(prev => [interaction, ...prev]);
+      
+      return response;
+    } catch (error) {
+      setLastError(error as Error);
+      throw error;
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [aiService, settings]);
+  
+  // Cancel ongoing generation
+  const cancelGeneration = useCallback(() => {
+    aiService.cancelRequests();
+    setIsGenerating(false);
+  }, [aiService]);
+  
+  // Update service options when settings change
+  useEffect(() => {
+    // This only works directly for MockAIService; 
+    // a real service would need proper reconfiguration
+    if (aiService instanceof MockAIService) {
+      (aiService as any).options = {
+        model: settings.model,
+        temperature: settings.temperature,
+        maxTokens: settings.maxTokens
+      };
+    }
+  }, [aiService, settings.model, settings.temperature, settings.maxTokens]);
+  
+  // Memoize the context value to prevent unnecessary rerenders
+  const contextValue = useMemo<AIContextValue>(() => ({
+    aiService,
     settings,
     updateSettings,
     history,
-    addToHistory,
-    rateInteraction,
     clearHistory,
-    isProcessing,
-    setIsProcessing
-  };
-
+    isGenerating,
+    lastError,
+    generateCompletion,
+    generateEdit,
+    analyzeText,
+    processRequest,
+    cancelGeneration
+  }), [
+    aiService,
+    settings,
+    updateSettings,
+    history,
+    clearHistory,
+    isGenerating,
+    lastError,
+    generateCompletion,
+    generateEdit,
+    analyzeText,
+    processRequest,
+    cancelGeneration
+  ]);
+  
   return (
     <AIContext.Provider value={contextValue}>
       {children}
