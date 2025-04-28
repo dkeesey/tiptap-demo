@@ -183,7 +183,7 @@ function App() {
                 </div>
               }>
                 {isCollaborationEnabled ? (
-                  <CollaborationProvider roomName={roomName} websocketUrl={websocketUrl}>
+                  <CollaborationProvider room={roomName}>
                     <UserPresence />
                     <CollaborativeTiptapEditor 
                       onChange={handleEditorChange}

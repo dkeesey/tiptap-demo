@@ -4,12 +4,16 @@ import StarterKit from '@tiptap/starter-kit';
 import Collaboration from '@tiptap/extension-collaboration';
 import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
 import { Mark } from '@tiptap/core';
+import { Node as ProseMirrorNode } from '@tiptap/pm/model';
 
 // AI Suggestion Imports
 import { aiService } from './ai-suggestions/ai-service';
 import { InlineAISuggestions } from './ai-suggestions/inline-ai-suggestions-extension';
 import { AISuggestionContextMenu } from './ai-suggestions/AISuggestionContextMenu';
+import { InlineSuggestionsExtension } from '../extensions/InlineSuggestionsExtension';
+import { InlineSuggestions } from './InlineSuggestions';
 import './ai-suggestions/ai-suggestions.css';
+import '../styles/inline-suggestions.css';
 
 // Custom mark for rendering AI suggestions
 const InlineAISuggestionMark = Mark.create({
@@ -78,25 +82,34 @@ export const TipTapEditor: React.FC = () => {
         aiService,
         triggerCharacters: ['/', '@']
       }),
-      InlineAISuggestionMark
+      InlineAISuggestionMark,
+      InlineSuggestionsExtension.configure({
+        typingDelay: 50,
+      })
     ],
     content: '', // Initial content
     onTransaction: ({ editor }) => {
       // Check for AI suggestion marks and prepare context menu
       const { selection } = editor.state;
-      const suggestionsInSelection = editor.state.doc.nodesBetween(
+      const suggestionsFound: ProseMirrorNode[] = [];
+      
+      editor.state.doc.nodesBetween(
         selection.from, 
         selection.to, 
         (node) => {
           const aiSuggestionMark = node.marks.find(
             mark => mark.type.name === 'inlineAISuggestion'
           );
-          return aiSuggestionMark;
+          if (aiSuggestionMark) {
+            suggestionsFound.push(node);
+          }
+          return true; // Continue traversing
         }
       );
 
-      if (suggestionsInSelection.length > 0) {
-        const aiSuggestionMark = suggestionsInSelection[0].marks.find(
+      if (suggestionsFound.length > 0) {
+        const node = suggestionsFound[0];
+        const aiSuggestionMark = node.marks.find(
           mark => mark.type.name === 'inlineAISuggestion'
         );
         
@@ -173,6 +186,9 @@ export const TipTapEditor: React.FC = () => {
 
       {/* Editor Content */}
       <EditorContent editor={editor} />
+
+      {/* Inline Suggestions Handler */}
+      <InlineSuggestions editor={editor} />
 
       {/* AI Suggestion Context Menu */}
       {contextMenuState.suggestionId && (
