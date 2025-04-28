@@ -8,6 +8,9 @@ import Suggestion from '@tiptap/suggestion'
 import { ReactRenderer } from '@tiptap/react'
 import tippy from 'tippy.js'
 import { Editor } from '@tiptap/core'
+import { getAISlashCommands } from './AISlashCommands'
+import { FileTextIcon, Heading1, Heading2, ListIcon, ListOrderedIcon, QuoteIcon, CodeIcon, SeparatorHorizontalIcon } from 'lucide-react'
+import React from 'react'
 
 // We'll define this component later
 import SlashCommandsList from '../components/Menus/SlashCommandsList'
@@ -21,6 +24,30 @@ export interface SlashCommand {
   command: ({ editor, range }: { editor: Editor; range: Range }) => void;
 }
 
+const createIcon = (Icon: any) => React.createElement(Icon, { className: "w-4 h-4" });
+
+declare global {
+  interface Window {
+    __lastSlashCommandPopup?: any;
+    __debugSlashCommand?: boolean;
+  }
+}
+
+// Enable debugging
+window.__debugSlashCommand = true;
+
+// Direct command execution function to bypass complex chain
+const executeCommand = (fn: Function) => {
+  try {
+    fn();
+    console.log('Direct command execution success');
+    return true;
+  } catch (error) {
+    console.error('Direct command execution failed:', error);
+    return false;
+  }
+};
+
 export const SlashCommandExtension = Extension.create({
   name: 'slashCommand',
 
@@ -30,7 +57,90 @@ export const SlashCommandExtension = Extension.create({
         char: '/',
         command: ({ editor, range, props }: { editor: any; range: any; props: any }) => {
           console.log('[SlashCommand] Triggered command:', props.item.title);
-          props.command({ editor, range });
+          
+          // Capture command details for direct execution
+          const commandTitle = props.item.title;
+          const commandFn = props.item.command;
+          
+          // Hide popup immediately
+          if (window.__lastSlashCommandPopup) {
+            window.__lastSlashCommandPopup.hide();
+          }
+          
+          // Remove the slash character first
+          editor.chain().focus().deleteRange(range).run();
+          console.log('[SlashCommand] Deleted range (slash character)');
+          
+          // Now directly execute the command logic based on the command type
+          setTimeout(() => {
+            try {
+              switch(commandTitle) {
+                case 'Heading 1':
+                  editor.chain().focus().setNode('heading', { level: 1 }).run();
+                  console.log('[SlashCommand] Applied Heading 1');
+                  break;
+                case 'Heading 2':
+                  editor.chain().focus().setNode('heading', { level: 2 }).run();
+                  console.log('[SlashCommand] Applied Heading 2');
+                  break;
+                case 'Bullet List':
+                  editor.chain().focus().toggleBulletList().run();
+                  console.log('[SlashCommand] Applied Bullet List');
+                  break;
+                case 'Numbered List':
+                  editor.chain().focus().toggleOrderedList().run();
+                  console.log('[SlashCommand] Applied Numbered List');
+                  break;
+                case 'Blockquote':
+                  editor.chain().focus().toggleBlockquote().run();
+                  console.log('[SlashCommand] Applied Blockquote');
+                  break;
+                case 'Code Block':
+                  editor.chain().focus().toggleCodeBlock().run();
+                  console.log('[SlashCommand] Applied Code Block');
+                  break;
+                case 'Horizontal Rule':
+                  editor.chain().focus().setHorizontalRule().run();
+                  console.log('[SlashCommand] Applied Horizontal Rule');
+                  break;
+                case 'AI Complete':
+                case 'AI Chat':
+                case 'AI Improve':
+                case 'AI Code':
+                case 'AI Explain':
+                case 'AI Translate':
+                case 'AI Rephrase':
+                case 'AI Brainstorm':
+                case 'AI Summarize':
+                case 'AI Expand':
+                case 'AI Regenerate':
+                case 'AI Inline Complete':
+                  // For AI commands, get text for context
+                  const { from } = editor.state.selection;
+                  const text = editor.state.doc.textBetween(Math.max(0, from - 500), from, '\n');
+                  
+                  // Create an AI prompt with appropriate title
+                  editor.chain().focus().setAiPrompt({
+                    title: commandTitle,
+                    prompt: `${commandTitle} prompt with context: ${text}`,
+                    status: 'idle'
+                  }).run();
+                  console.log('[SlashCommand] Applied AI command:', commandTitle);
+                  break;
+                default:
+                  // For other commands, try to execute the original command function
+                  try {
+                    commandFn({ editor, range });
+                    console.log('[SlashCommand] Applied custom command:', commandTitle);
+                  } catch (cmdErr) {
+                    console.error('[SlashCommand] Error executing custom command:', cmdErr);
+                  }
+                  break;
+              }
+            } catch (err) {
+              console.error('[SlashCommand] Error executing command:', err);
+            }
+          }, 10);
         },
       },
     }
@@ -43,236 +153,132 @@ export const SlashCommandExtension = Extension.create({
         ...this.options.suggestion,
         items: ({ query }: { query: string }) => {
           console.log(`[SlashCommand] Query: "${query}"`);
-          const commands: SlashCommand[] = [
-            // Basic formatting
+          
+          // Basic formatting commands
+          const basicCommands: SlashCommand[] = [
             {
               title: 'Text',
               description: 'Just start typing with plain text.',
               category: 'basic',
+              icon: createIcon(FileTextIcon),
               command: ({ editor, range }) => {
-                editor.chain().focus().deleteRange(range).run()
+                // This is now handled by the main command processing
+                // which removes the slash for all commands
+                console.log('Text command executed - no action needed as slash is already removed');
               },
             },
             {
               title: 'Heading 1',
               description: 'Large section heading.',
               category: 'formatting',
+              icon: createIcon(Heading1),
               command: ({ editor, range }) => {
-                editor
-                  .chain()
-                  .focus()
-                  .deleteRange(range)
-                  .setNode('heading', { level: 1 })
-                  .run()
+                // This is now handled directly in the command handler
+                console.log('[Command definition] Heading 1 command');
               },
             },
             {
               title: 'Heading 2',
               description: 'Medium section heading.',
               category: 'formatting',
+              icon: createIcon(Heading2),
               command: ({ editor, range }) => {
-                editor
-                  .chain()
-                  .focus()
-                  .deleteRange(range)
-                  .setNode('heading', { level: 2 })
-                  .run()
+                // Now handled directly in the command handler
+                console.log('[Command definition] Heading 2 command');
               },
             },
             {
               title: 'Bullet List',
               description: 'Create a simple bullet list.',
               category: 'formatting',
+              icon: createIcon(ListIcon),
               command: ({ editor, range }) => {
-                editor.chain().focus().deleteRange(range).toggleBulletList().run()
+                // Now handled directly in the command handler
+                console.log('[Command definition] Bullet List command');
               },
             },
             {
               title: 'Numbered List',
               description: 'Create a numbered list.',
               category: 'formatting',
+              icon: createIcon(ListOrderedIcon),
               command: ({ editor, range }) => {
-                editor.chain().focus().deleteRange(range).toggleOrderedList().run()
+                // Now handled directly in the command handler
+                console.log('[Command definition] Numbered List command');
               },
             },
             {
               title: 'Blockquote',
               description: 'Capture a quote or excerpt.',
               category: 'formatting',
+              icon: createIcon(QuoteIcon),
               command: ({ editor, range }) => {
-                editor.chain().focus().deleteRange(range).toggleBlockquote().run()
+                // Now handled directly in the command handler
+                console.log('[Command definition] Blockquote command');
               },
             },
             {
               title: 'Code Block',
               description: 'Display code with syntax highlighting.',
               category: 'formatting',
+              icon: createIcon(CodeIcon),
               command: ({ editor, range }) => {
-                editor.chain().focus().deleteRange(range).toggleCodeBlock().run()
+                // Now handled directly in the command handler
+                console.log('[Command definition] Code Block command');
               },
             },
             {
               title: 'Horizontal Rule',
               description: 'Add a horizontal divider.',
               category: 'formatting',
+              icon: createIcon(SeparatorHorizontalIcon),
               command: ({ editor, range }) => {
-                editor.chain().focus().deleteRange(range).setHorizontalRule().run()
-              },
-            },
-            
-            // AI prompt specific commands
-            {
-              title: 'AI Prompt',
-              description: 'Add an AI prompt block for general use.',
-              category: 'ai',
-              command: ({ editor, range }) => {
-                editor.chain().focus().deleteRange(range).setAiPrompt({}).run();
-              },
-            },
-            {
-              title: 'AI Explain',
-              description: 'Ask AI to explain a concept.',
-              category: 'ai',
-              command: ({ editor, range }) => {
-                editor.chain().focus().deleteRange(range).setAiPrompt({
-                  title: 'AI Explain',
-                  prompt: 'Explain this concept in simple terms:',
-                  status: 'idle'
-                }).run();
-              },
-            },
-            {
-              title: 'AI Summarize',
-              description: 'Ask AI to summarize text.',
-              category: 'ai',
-              command: ({ editor, range }) => {
-                editor.chain().focus().deleteRange(range).setAiPrompt({
-                  title: 'AI Summarize', 
-                  prompt: 'Please summarize the following text:',
-                  status: 'idle'
-                }).run();
-              },
-            },
-            {
-              title: 'AI Improve',
-              description: 'Ask AI to improve your writing.',
-              category: 'ai',
-              command: ({ editor, range }) => {
-                editor.chain().focus().deleteRange(range).setAiPrompt({
-                  title: 'AI Writing Improvement',
-                  prompt: 'Please improve this text for clarity and style:',
-                  status: 'idle'
-                }).run();
-              },
-            },
-            {
-              title: 'AI Code',
-              description: 'Get help with coding problems.',
-              category: 'ai',
-              command: ({ editor, range }) => {
-                editor.chain().focus().deleteRange(range).setAiPrompt({
-                  title: 'AI Code Assistant',
-                  prompt: 'Help me with this coding task:',
-                  status: 'idle'
-                }).run();
-              },
-            },
-            {
-              title: 'AI Brainstorm',
-              description: 'Generate ideas on a topic.',
-              category: 'ai',
-              command: ({ editor, range }) => {
-                editor.chain().focus().deleteRange(range).setAiPrompt({
-                  title: 'AI Brainstorming',
-                  prompt: 'Brainstorm ideas about:',
-                  status: 'idle'
-                }).run();
-              },
-            },
-            {
-              title: 'AI Translate',
-              description: 'Translate text to another language.',
-              category: 'ai',
-              command: ({ editor, range }) => {
-                editor.chain().focus().deleteRange(range).setAiPrompt({
-                  title: 'AI Translation',
-                  prompt: 'Translate this text to:',
-                  status: 'idle'
-                }).run();
-              },
-            },
-            {
-              title: 'AI Complete',
-              description: 'Continue writing with AI assistance.',
-              category: 'ai',
-              command: ({ editor, range }) => {
-                // Get text before cursor to use as context
-                const { from } = range;
-                const text = editor.state.doc.textBetween(Math.max(0, from - 500), from, '\n');
-                
-                editor.chain().focus().deleteRange(range).setAiPrompt({
-                  title: 'AI Completion',
-                  prompt: `Continue writing from here:\n\n${text}`,
-                  status: 'loading' // Immediately start processing
-                }).run();
-              },
-            },
-            {
-              title: 'AI Transform Selection',
-              description: 'Transform selected text with AI.',
-              category: 'ai',
-              command: ({ editor, range }) => {
-                // Get selected text
-                const { from, to } = editor.state.selection;
-                const selectedText = editor.state.doc.textBetween(from, to, '\n');
-                
-                if (!selectedText) {
-                  // If no text is selected, just insert an empty prompt
-                  editor.chain().focus().deleteRange(range).setAiPrompt({
-                    title: 'AI Transform',
-                    prompt: 'Transform this text by:',
-                    status: 'idle'
-                  }).run();
-                } else {
-                  // If text is selected, prefill the prompt with the selection
-                  editor.chain().focus().deleteRange(range).setAiPrompt({
-                    title: 'AI Transform',
-                    prompt: `Transform this text by improving its clarity and style:\n\n${selectedText}`,
-                    status: 'loading' // Immediately start processing
-                  }).run();
-                }
+                // Now handled directly in the command handler
+                console.log('[Command definition] Horizontal Rule command');
               },
             },
           ];
 
+          // Get AI commands
+          const aiCommands = getAISlashCommands(this.editor);
+
+          // Combine all commands
+          const allCommands = [...basicCommands, ...aiCommands];
+
           if (!query) {
-            console.log('[SlashCommand] No query, returning all commands:', commands.map(c => c.title));
-            return commands;
+            console.log('[SlashCommand] No query, returning all commands:', allCommands.map(c => c.title));
+            return allCommands;
           }
 
-          // Filter commands by title and category
           const lowerQuery = query.toLowerCase();
           
           // Check if query starts with 'ai' to prioritize AI commands
           if (lowerQuery.startsWith('ai')) {
-            const aiCommands = commands
-              .filter(item => item.category === 'ai')
-              .filter(item => item.title.toLowerCase().includes(lowerQuery));
+            const filteredAICommands = aiCommands.filter(item => 
+              item.title.toLowerCase().includes(lowerQuery) || 
+              item.description.toLowerCase().includes(lowerQuery)
+            );
               
             // If there are AI commands matching, return those first
-            if (aiCommands.length > 0) {
-              return aiCommands;
+            if (filteredAICommands.length > 0) {
+              return filteredAICommands;
             }
           }
           
-          // Otherwise filter all commands
-          const filteredCommands = commands.filter(item => 
+          // Filter by category if specified
+          if (lowerQuery.startsWith('format')) {
+            return allCommands.filter(item => item.category === 'formatting');
+          }
+          
+          if (lowerQuery.startsWith('basic')) {
+            return allCommands.filter(item => item.category === 'basic');
+          }
+          
+          // Otherwise filter all commands by title and description
+          return allCommands.filter(item => 
             item.title.toLowerCase().includes(lowerQuery) || 
             item.description.toLowerCase().includes(lowerQuery)
           );
-          
-          console.log(`[SlashCommand] Filtered commands for "${query}":`, filteredCommands.map(c => c.title));
-          return filteredCommands;
         },
         render: () => {
           let reactRenderer: ReactRenderer;
@@ -300,7 +306,18 @@ export const SlashCommandExtension = Extension.create({
                 interactive: true,
                 trigger: 'manual',
                 placement: 'bottom-start',
+                hideOnClick: true,
+                onHide: () => {
+                  console.log('[SlashCommand] Popup hiding');
+                },
+                onHidden: () => {
+                  console.log('[SlashCommand] Popup hidden');
+                }
               });
+              
+              // Store a reference to the popup
+              // @ts-ignore - adding a property to window
+              window.__lastSlashCommandPopup = popup[0];
             },
             onUpdate(props) {
               reactRenderer.updateProps(props);
@@ -328,12 +345,12 @@ export const SlashCommandExtension = Extension.create({
             onExit() {
               popup[0].destroy();
               reactRenderer.destroy();
-            },
+            }
           };
         },
       }),
     ];
-  },
+  }
 });
 
 export default SlashCommandExtension;
