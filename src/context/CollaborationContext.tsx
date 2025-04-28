@@ -4,14 +4,55 @@ import { WebsocketProvider } from 'y-websocket';
 import { syncedStore, getYjsValue } from '@syncedstore/core';
 import { UndoManager } from 'yjs';
 
-// Disable all Y.js logging globally
-// @ts-ignore - Accessing internal property to completely disable logging
-if (Y.logging) {
-  Y.logging.setLevel('error');
-  // Further disable specific loggers
-  Y.logging.createLogger = () => ({
-    print: () => {}, // No-op function
-  });
+// Updated approach to handle logging without relying on Y.logging
+// Instead of trying to access internal logging API that doesn't exist,
+// we'll implement a more compatible approach
+try {
+  // Attempt to minimize logging through environment variables if supported
+  if (typeof process !== 'undefined' && process.env) {
+    process.env.Y_LOGGING = 'error';
+  }
+  
+  // Monkey-patch console methods to filter Y.js logs if needed
+  // This is safer than relying on internal APIs
+  const originalConsoleLog = console.log;
+  const originalConsoleWarn = console.warn;
+  const originalConsoleError = console.error;
+  
+  // Filter functions that check if log messages are from Y.js
+  const isYjsLog = (args: any[]) => {
+    if (args.length === 0) return false;
+    const firstArg = String(args[0]);
+    return firstArg.includes('y-websocket') || 
+           firstArg.includes('yjs') || 
+           firstArg.startsWith('y:');
+  };
+  
+  // Only apply in non-development mode or if explicitly enabled
+  const shouldFilterLogs = process.env.NODE_ENV !== 'development' || 
+                         localStorage.getItem('filter-yjs-logs') === 'true';
+  
+  if (shouldFilterLogs) {
+    console.log = (...args: any[]) => {
+      if (!isYjsLog(args)) {
+        originalConsoleLog(...args);
+      }
+    };
+    
+    console.warn = (...args: any[]) => {
+      if (!isYjsLog(args)) {
+        originalConsoleWarn(...args);
+      }
+    };
+    
+    console.error = (...args: any[]) => {
+      if (!isYjsLog(args)) {
+        originalConsoleError(...args);
+      }
+    };
+  }
+} catch (e) {
+  console.error('Failed to set up Y.js log filtering:', e);
 }
 
 // Types for user and connection status
@@ -177,41 +218,84 @@ export const CollaborationProvider: React.FC<CollaborationProviderProps> = ({
     // Set connecting status while we attempt to connect - minimize logging
     setConnectionStatus('connecting');
     
-    // Log only critical messages, not general connection attempts
-    // console.log(`Attempting to connect to WebSocket at ${websocketUrl}/${roomName}`);
+    console.log(`Attempting to connect to WebSocket at ${websocketUrl}/${roomName}`);
+    
+    // Function to create a fallback connection if primary fails
+    const createFallbackConnection = () => {
+      try {
+        // Try alternative port 1235 as fallback
+        const fallbackUrl = websocketUrl.replace('1236', '1235');
+        console.log(`Trying fallback WebSocket connection on ${fallbackUrl}`);
+        
+        const wsProvider = new WebsocketProvider(fallbackUrl, roomName, ydoc, { 
+          connect: true,
+          maxBackoffTime: 5000,
+          disableBc: false,
+          resyncInterval: 10000,
+          // logging: false, // Removed invalid property
+        });
+        
+        console.log('Fallback WebSocket provider created successfully');
+        setProvider(wsProvider);
+        
+        setupProviderEventListeners(wsProvider);
+      } catch (err) {
+        console.error('Failed to create fallback WebSocket provider:', err);
+        setConnectionStatus('disconnected');
+      }
+    };
     
     // Create WebSocket provider
     let wsProvider: WebsocketProvider;
     try {
-      console.log(`Creating WebSocket provider with URL: ${websocketUrl}, room: ${roomName}`);
+      // Check if WebSocket server is running by making a test connection first
+      const testSocket = new WebSocket(`${websocketUrl}/${roomName}`);
       
-      // More robust configuration for WebSocket provider
-      wsProvider = new WebsocketProvider(websocketUrl, roomName, ydoc, { 
-        connect: true,
-        maxBackoffTime: 5000,  // Increased max backoff time for reconnection attempts
-        disableBc: false,      // Enable BroadcastChannel as fallback
-        resyncInterval: 10000, // Resync every 10 seconds if disconnected
-        logging: false,        // Disable all internal logging completely
-      });
+      testSocket.onopen = () => {
+        console.log('WebSocket connection test successful, creating provider');
+        testSocket.close();
+        
+        // More robust configuration for WebSocket provider
+        wsProvider = new WebsocketProvider(websocketUrl, roomName, ydoc, { 
+          connect: true,
+          maxBackoffTime: 5000,  // Increased max backoff time for reconnection attempts
+          disableBc: false,      // Enable BroadcastChannel as fallback
+          resyncInterval: 10000, // Resync every 10 seconds if disconnected
+          // logging: false,      // Removed invalid property
+        });
+        
+        console.log('WebSocket provider created successfully');
+        setProvider(wsProvider);
+        
+        // Make an initial connection attempt
+        if (!wsProvider.shouldConnect) {
+          console.log('Initial connection attempt...');
+          wsProvider.connect();
+        }
+        
+        setupProviderEventListeners(wsProvider);
+      };
       
-      // Minimal logging
-      // console.log('WebSocket provider created successfully');
-      setProvider(wsProvider);
+      testSocket.onerror = (error: Event) => {
+        console.error('WebSocket connection test failed:', error);
+        setConnectionStatus('disconnected');
+        // Try to create a fallback connection to alternative port if primary fails
+        createFallbackConnection();
+      };
       
-      // Make an initial connection attempt - minimize logging
-      if (!wsProvider.shouldConnect) {
-        // console.log('Initial connection attempt...');
-        wsProvider.connect();
-      }
     } catch (err) {
       console.error('Failed to create WebSocket provider:', err);
       setConnectionStatus('disconnected');
-      return;
+      // Try to create a fallback connection to alternative port
+      createFallbackConnection();
     }
+    
+    // Function to set up event listeners for the provider
+    const setupProviderEventListeners = (wsProvider: WebsocketProvider) => {
 
     // Only add essential event listeners, remove those causing excessive logs
     wsProvider.on('status', (event: { status: string }) => {
-      // Only update state, no logging
+      console.log(`WebSocket status changed: ${event.status}`);
       if (event.status === 'connected') {
         setConnectionStatus('connected');
         
@@ -224,7 +308,7 @@ export const CollaborationProvider: React.FC<CollaborationProviderProps> = ({
             avatar: currentUser.avatar
           });
         } catch (err) {
-          // Silent error handling
+          console.error('Failed to set awareness field:', err);
         }
       } else if (event.status === 'connecting') {
         setConnectionStatus('connecting');
@@ -233,17 +317,18 @@ export const CollaborationProvider: React.FC<CollaborationProviderProps> = ({
       }
     });
     
-    // Error handler - silent to avoid console flooding
-    wsProvider.on('connection-error', () => {
-      // Only update status if needed
+    // Error handler with limited logging
+    wsProvider.on('connection-error', (error: Error) => {
+      // Log the first error but avoid flooding
+      console.error('WebSocket connection error:', error);
       if (connectionStatus !== 'disconnected') {
         setConnectionStatus('disconnected');
       }
     });
     
-    // Connection close handler - silent to avoid console flooding
+    // Connection close handler with limited logging
     wsProvider.on('connection-close', () => {
-      // No logging or counters, just state updates if needed
+      console.log('WebSocket connection closed');
       if (connectionStatus !== 'disconnected') {
         setConnectionStatus('disconnected');
       }
@@ -283,40 +368,42 @@ export const CollaborationProvider: React.FC<CollaborationProviderProps> = ({
       }
     };
 
-    // Add awareness handler and throttle its execution to reduce events
-    let throttleTimeout: NodeJS.Timeout | null = null;
-    const throttledAwarenessHandler = () => {
-      if (throttleTimeout) {
-        clearTimeout(throttleTimeout);
-      }
-      throttleTimeout = setTimeout(awarenessHandler, 1000); // Only update once per second max
-    };
-
-    wsProvider.awareness.on('change', throttledAwarenessHandler);
-    awarenessHandler(); // Initial call to populate connected users
-    
-    // Document update handler - with no logging
-    const documentUpdateHandler = () => {
-      // Remove all logging, just let Y.js handle the updates
-    };
-    
-    // Add document update handler but throttle to reduce frequency
-    ydoc.on('update', documentUpdateHandler);
-    
-    // Clean up - with minimal logging
-    return () => {
-      try {
-        wsProvider.awareness.off('change', throttledAwarenessHandler);
-        ydoc.off('update', documentUpdateHandler);
-        // Silently disconnect
-        wsProvider.disconnect();
-        // Clean up throttle timeout if it exists
+      // Add awareness handler and throttle its execution to reduce events
+      let throttleTimeout: NodeJS.Timeout | null = null;
+      const throttledAwarenessHandler = () => {
         if (throttleTimeout) {
           clearTimeout(throttleTimeout);
         }
-      } catch (err) {
-        // Silent error handling
+        throttleTimeout = setTimeout(awarenessHandler, 1000); // Only update once per second max
+      };
+
+      wsProvider.awareness.on('change', throttledAwarenessHandler);
+      awarenessHandler(); // Initial call to populate connected users
+      
+      // Document update handler - with no logging
+      const documentUpdateHandler = () => {
+        // Remove all logging, just let Y.js handle the updates
+      };
+      
+      // Add document update handler but throttle to reduce frequency
+      ydoc.on('update', documentUpdateHandler);
+    };
+    
+    // Clean up function
+    return () => {
+      // Clean up will be handled by the websocket provider itself
+      if (provider) {
+        try {
+          // Use empty function instead of null for type safety
+          provider.awareness.off('change', () => {});
+          provider.disconnect();
+        } catch (err) {
+          console.error('Error during cleanup:', err);
+        }
       }
+      
+      // Clean up any document listeners
+      ydoc.off('update', () => {});
     };
   }, [ydoc, roomName, websocketUrl, currentUser.id, currentUser.name, currentUser.color, currentUser.avatar]);
 
