@@ -1,162 +1,83 @@
-/* Slash Command Menu Styles */
+/* Slash Commands UI Styles - Inspired by Notion */
 
+/* Container for the commands list */
 .slash-commands-list {
-  --transition-speed: 150ms;
-  z-index: 100;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  border-radius: 0.5rem;
-  min-width: 320px;
-  max-width: 360px;
-  overflow: hidden;
-  animation: slideIn var(--transition-speed) cubic-bezier(0.16, 1, 0.3, 1);
+  @apply bg-white rounded-md shadow-lg border border-gray-200 overflow-hidden;
+  width: 320px;
+  max-width: 90vw;
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Category headings */
+.command-category {
+  @apply px-3 py-1 text-xs font-medium text-gray-500 border-b border-gray-200;
 }
 
-.slash-commands-list:focus {
-  outline: none;
+/* Individual command items */
+.command-item {
+  @apply flex items-start px-3 py-2 hover:bg-gray-100 w-full text-left;
+  transition: background-color 0.15s ease;
 }
 
-.slash-commands-list .command-category {
-  padding: 0.375rem 0.75rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #6b7280;
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
-  border-bottom: 1px solid #f3f4f6;
-  margin-bottom: 0.25rem;
+/* Selected command styling */
+.command-item.selected {
+  @apply bg-gray-100;
 }
 
-.slash-commands-list .command-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  padding: 0.625rem 0.75rem;
-  cursor: pointer;
-  transition: background-color var(--transition-speed) ease-in-out;
+/* Icon container */
+.command-icon {
+  @apply text-gray-500 p-1 rounded-sm mr-3 mt-0.5;
 }
 
-.slash-commands-list .command-item:hover {
-  background-color: #f9fafb;
+/* Selected command icon */
+.command-item.selected .command-icon {
+  @apply text-blue-600;
 }
 
-.slash-commands-list .command-item.selected {
-  background-color: #f3f4ff;
+/* Command content (title and description) */
+.command-content {
+  @apply flex-1 flex flex-col;
 }
 
-.slash-commands-list .command-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  background-color: #f3f4f6;
-  border-radius: 0.375rem;
-  color: #4b5563;
-  transition: all var(--transition-speed) ease-in-out;
+/* Command title */
+.command-title {
+  @apply font-medium text-gray-900 text-sm;
 }
 
-.slash-commands-list .command-item.selected .command-icon {
-  background-color: #e0e7ff;
-  color: #6366f1;
+/* Command description */
+.command-description {
+  @apply text-xs text-gray-500 mt-0.5;
 }
 
-.slash-commands-list .command-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+/* Help section at the bottom */
+.command-help {
+  @apply mt-2 px-3 py-2 border-t border-gray-200 text-xs text-gray-500;
 }
 
-.slash-commands-list .command-title {
-  font-weight: 500;
-  color: #1f2937;
+/* Each help row (action + key) */
+.command-help-row {
+  @apply flex justify-between items-center mb-1;
 }
 
-.slash-commands-list .command-description {
-  font-size: 0.75rem;
-  color: #6b7280;
-  margin-top: 0.125rem;
+/* Key styling */
+.command-help-key {
+  @apply inline-flex items-center justify-center bg-gray-100 border border-gray-300 rounded px-1.5 py-0.5 text-xs font-medium text-gray-700 min-w-[20px];
 }
 
-.slash-commands-list .command-help {
-  font-size: 0.75rem;
-  padding: 0.5rem 0.75rem;
-  color: #6b7280;
-  border-top: 1px solid #f3f4f6;
-  margin-top: 0.25rem;
+/* AI command specific styles */
+.command-item[data-category="ai"] .command-icon {
+  @apply text-purple-500;
 }
 
-.slash-commands-list .command-help-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.25rem;
+.command-item[data-category="ai"].selected .command-icon {
+  @apply text-purple-600;
 }
 
-.slash-commands-list .command-help-row:last-child {
-  margin-bottom: 0;
+/* Animation for showing the menu */
+.tippy-box[data-animation=fade][data-state=hidden] {
+  opacity: 0;
 }
 
-.slash-commands-list .command-help-key {
-  background-color: #f3f4f6;
-  border-radius: 0.25rem;
-  padding: 0.125rem 0.25rem;
-  font-size: 0.75rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-}
-
-/* Dark mode support */
-.dark .slash-commands-list {
-  background-color: #1f2937;
-  border-color: #374151;
-}
-
-.dark .slash-commands-list .command-category {
-  color: #9ca3af;
-  border-bottom-color: #374151;
-}
-
-.dark .slash-commands-list .command-item:hover {
-  background-color: #111827;
-}
-
-.dark .slash-commands-list .command-item.selected {
-  background-color: #1e1b4b;
-}
-
-.dark .slash-commands-list .command-icon {
-  background-color: #374151;
-  color: #d1d5db;
-}
-
-.dark .slash-commands-list .command-item.selected .command-icon {
-  background-color: #4338ca;
-  color: #e0e7ff;
-}
-
-.dark .slash-commands-list .command-title {
-  color: #f3f4f6;
-}
-
-.dark .slash-commands-list .command-description {
-  color: #9ca3af;
-}
-
-.dark .slash-commands-list .command-help {
-  color: #9ca3af;
-  border-top-color: #374151;
-}
-
-.dark .slash-commands-list .command-help-key {
-  background-color: #374151;
-  color: #d1d5db;
+.tippy-box[data-animation=fade][data-state=visible] {
+  opacity: 1;
+  transition: opacity 0.2s ease-out;
 }
