@@ -1,0 +1,34 @@
+{
+  "project": "TipTap Demo for Wordware",
+  "version": "1.0.0",
+  "description": "An advanced TipTap editor with AI suggestions and collaborative editing",
+  "categoriesOrder": [
+    "ai-features",
+    "ui-enhancements",
+    "debugging",
+    "collaboration",
+    "documentation"
+  ],
+  "categories": {
+    "ai-features": "AI integration features",
+    "ui-enhancements": "UI and UX improvements",
+    "debugging": "Bug fixes and debugging tools",
+    "collaboration": "Collaborative editing features",
+    "documentation": "Documentation and presentation materials"
+  },
+  "statusOptions": [
+    "todo",
+    "in-progress",
+    "review",
+    "done"
+  ],
+  "priorityOptions": [
+    "low",
+    "medium",
+    "high",
+    "critical"
+  ],
+  "defaultCategory": "ai-features",
+  "defaultStatus": "todo",
+  "defaultPriority": "medium"
+}

@@ -1,0 +1,190 @@
+{
+  "tasks": [
+    {
+      "id": "presentation-prep",
+      "title": "Prepare presentation materials",
+      "description": "Create comprehensive presentation materials for the Wordware interview, including demo script, feature highlights, and technical explanations.",
+      "category": "documentation",
+      "status": "todo",
+      "priority": "critical",
+      "due": "2025-04-27",
+      "subtasks": [
+        {
+          "id": "demo-script",
+          "title": "Create detailed demo script",
+          "status": "todo"
+        },
+        {
+          "id": "feature-slides",
+          "title": "Prepare feature highlight slides",
+          "status": "todo"
+        },
+        {
+          "id": "tech-overview",
+          "title": "Develop technical overview",
+          "status": "todo"
+        },
+        {
+          "id": "q-and-a-prep",
+          "title": "Prepare for Q&A session",
+          "status": "todo"
+        }
+      ]
+    },
+    {
+      "id": "readme-update",
+      "title": "Update project README",
+      "description": "Create a comprehensive README.md for the project with clear installation instructions, feature documentation, and usage examples.",
+      "category": "documentation",
+      "status": "todo",
+      "priority": "high",
+      "due": "2025-04-27",
+      "subtasks": [
+        {
+          "id": "install-instructions",
+          "title": "Write installation instructions",
+          "status": "todo"
+        },
+        {
+          "id": "feature-docs",
+          "title": "Document all features",
+          "status": "todo"
+        },
+        {
+          "id": "usage-examples",
+          "title": "Create usage examples",
+          "status": "todo"
+        },
+        {
+          "id": "architecture-overview",
+          "title": "Add architecture overview",
+          "status": "todo"
+        }
+      ]
+    },
+    {
+      "id": "technical-docs",
+      "title": "Create technical documentation",
+      "description": "Develop in-depth technical documentation for the project, including architecture diagrams, component descriptions, and API references.",
+      "category": "documentation",
+      "status": "todo",
+      "priority": "medium",
+      "due": "2025-04-27",
+      "subtasks": [
+        {
+          "id": "architecture-diagrams",
+          "title": "Create architecture diagrams",
+          "status": "todo"
+        },
+        {
+          "id": "component-descriptions",
+          "title": "Write component descriptions",
+          "status": "todo"
+        },
+        {
+          "id": "api-reference",
+          "title": "Develop API reference",
+          "status": "todo"
+        },
+        {
+          "id": "extension-docs",
+          "title": "Document custom extensions",
+          "status": "todo"
+        }
+      ]
+    },
+    {
+      "id": "user-guides",
+      "title": "Write user guides",
+      "description": "Create user-focused guides for all features, including the editor basics, AI features, and collaboration capabilities.",
+      "category": "documentation",
+      "status": "todo",
+      "priority": "medium",
+      "due": "2025-04-27",
+      "subtasks": [
+        {
+          "id": "editor-basics",
+          "title": "Document editor basics",
+          "status": "todo"
+        },
+        {
+          "id": "ai-features-guide",
+          "title": "Create AI features guide",
+          "status": "todo"
+        },
+        {
+          "id": "collaboration-guide",
+          "title": "Write collaboration user guide",
+          "status": "todo"
+        },
+        {
+          "id": "advanced-features",
+          "title": "Document advanced features",
+          "status": "todo"
+        }
+      ]
+    },
+    {
+      "id": "code-comments",
+      "title": "Improve code comments",
+      "description": "Add comprehensive code comments throughout the codebase for better maintainability and developer onboarding.",
+      "category": "documentation",
+      "status": "todo",
+      "priority": "low",
+      "due": "2025-04-27",
+      "subtasks": [
+        {
+          "id": "component-comments",
+          "title": "Add comments to React components",
+          "status": "todo"
+        },
+        {
+          "id": "extension-comments",
+          "title": "Document TipTap extensions",
+          "status": "todo"
+        },
+        {
+          "id": "utility-comments",
+          "title": "Comment utility functions",
+          "status": "todo"
+        },
+        {
+          "id": "context-comments",
+          "title": "Document context providers",
+          "status": "todo"
+        }
+      ]
+    },
+    {
+      "id": "learning-docs",
+      "title": "Document learnings and challenges",
+      "description": "Create documentation about the challenges faced, solutions found, and lessons learned during the development process.",
+      "category": "documentation",
+      "status": "todo",
+      "priority": "low",
+      "due": "2025-04-27",
+      "subtasks": [
+        {
+          "id": "challenges-doc",
+          "title": "Document technical challenges",
+          "status": "todo"
+        },
+        {
+          "id": "solutions-doc",
+          "title": "Record solutions and workarounds",
+          "status": "todo"
+        },
+        {
+          "id": "lessons-learned",
+          "title": "Compile lessons learned",
+          "status": "todo"
+        },
+        {
+          "id": "future-improvements",
+          "title": "Suggest future improvements",
+          "status": "todo"
+        }
+      ]
+    }
+  ]
+}

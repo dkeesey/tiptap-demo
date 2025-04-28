@@ -1,0 +1,248 @@
+{
+  "tasks": [
+    {
+      "id": "ai-service",
+      "title": "Create AI service abstraction",
+      "description": "Implement the AI service interface that will handle communication with AI services. This should include methods for generating completions, edits, and text analysis. For the demo, implement a MockAIService that returns predefined responses.",
+      "category": "ai-features",
+      "status": "in-progress",
+      "priority": "high",
+      "due": "2025-04-25",
+      "subtasks": [
+        {
+          "id": "ai-service-interface",
+          "title": "Define AI service interface",
+          "status": "review"
+        },
+        {
+          "id": "mock-ai-service",
+          "title": "Implement mock AI service",
+          "status": "in-progress"
+        },
+        {
+          "id": "response-types",
+          "title": "Define response types and formats",
+          "status": "todo"
+        }
+      ]
+    },
+    {
+      "id": "ai-context",
+      "title": "Create AI context provider",
+      "description": "Implement a React context provider to manage AI state, settings, and history across the application. This will provide components with access to the AI service and maintain AI interaction history.",
+      "category": "ai-features",
+      "status": "in-progress",
+      "priority": "high",
+      "due": "2025-04-25",
+      "subtasks": [
+        {
+          "id": "ai-settings",
+          "title": "Define AI settings interface",
+          "status": "todo"
+        },
+        {
+          "id": "ai-history",
+          "title": "Implement AI interaction history",
+          "status": "todo"
+        },
+        {
+          "id": "ai-provider",
+          "title": "Create AI provider component",
+          "status": "todo"
+        }
+      ]
+    },
+    {
+      "id": "ai-prompt-node",
+      "title": "Update AI prompt node",
+      "description": "Enhance the existing AI prompt node to work with the new AI service interface. Implement different types of prompts (explain, summarize, expand, etc.) and improve the visual appearance.",
+      "category": "ai-features",
+      "status": "todo",
+      "priority": "high",
+      "due": "2025-04-25",
+      "subtasks": [
+        {
+          "id": "prompt-types",
+          "title": "Define different prompt types",
+          "status": "todo"
+        },
+        {
+          "id": "prompt-styling",
+          "title": "Improve prompt node styling",
+          "status": "todo"
+        },
+        {
+          "id": "prompt-actions",
+          "title": "Add prompt actions (regenerate, edit, etc.)",
+          "status": "todo"
+        }
+      ]
+    },
+    {
+      "id": "ai-sidebar",
+      "title": "Build AI sidebar component",
+      "description": "Create a collapsible sidebar component for AI interactions, with tabs for chat, actions, and settings. This will provide a persistent interface for AI features.",
+      "category": "ai-features",
+      "status": "in-progress",
+      "priority": "medium",
+      "due": "2025-04-25",
+      "subtasks": [
+        {
+          "id": "sidebar-ui",
+          "title": "Create sidebar UI with tabs",
+          "status": "todo"
+        },
+        {
+          "id": "ai-chat",
+          "title": "Implement chat interface in sidebar",
+          "status": "todo"
+        },
+        {
+          "id": "ai-actions",
+          "title": "Add predefined actions in sidebar",
+          "status": "todo"
+        },
+        {
+          "id": "ai-settings-ui",
+          "title": "Create settings interface in sidebar",
+          "status": "todo"
+        }
+      ]
+    },
+    {
+      "id": "ai-actions-menu",
+      "title": "Create AI actions menu",
+      "description": "Implement a context menu for AI actions on selected text. This should appear when text is selected and offer transformations like summarize, expand, rewrite, etc.",
+      "category": "ai-features",
+      "status": "in-progress",
+      "priority": "medium",
+      "due": "2025-04-26",
+      "subtasks": [
+        {
+          "id": "menu-ui",
+          "title": "Create context menu UI",
+          "status": "todo"
+        },
+        {
+          "id": "transformation-actions",
+          "title": "Implement text transformation actions",
+          "status": "todo"
+        },
+        {
+          "id": "menu-trigger",
+          "title": "Set up menu trigger on text selection",
+          "status": "todo"
+        }
+      ]
+    },
+    {
+      "id": "inline-suggestions",
+      "title": "Implement inline AI suggestions",
+      "description": "Create a mechanism for inline AI completions that can be triggered with a slash command. The suggestions should be visually distinguished from user content and provide options to accept, reject, or modify.",
+      "category": "ai-features",
+      "status": "todo",
+      "priority": "high",
+      "due": "2025-04-26",
+      "subtasks": [
+        {
+          "id": "inline-ui",
+          "title": "Create inline suggestion UI",
+          "status": "todo"
+        },
+        {
+          "id": "suggestion-commands",
+          "title": "Add slash command for inline suggestions",
+          "status": "todo"
+        },
+        {
+          "id": "accept-reject",
+          "title": "Implement accept/reject functionality",
+          "status": "todo"
+        },
+        {
+          "id": "typing-effect",
+          "title": "Add typing-like effect for suggestions",
+          "status": "todo"
+        }
+      ]
+    },
+    {
+      "id": "slash-commands",
+      "title": "Enhance slash commands with AI options",
+      "description": "Add AI-related commands to the existing slash command interface, including options for creating AI prompts, getting inline suggestions, and accessing the AI sidebar.",
+      "category": "ai-features",
+      "status": "todo",
+      "priority": "medium",
+      "due": "2025-04-26",
+      "subtasks": [
+        {
+          "id": "ai-commands",
+          "title": "Add AI-specific slash commands",
+          "status": "todo"
+        },
+        {
+          "id": "command-icons",
+          "title": "Create icons for AI commands",
+          "status": "todo"
+        },
+        {
+          "id": "command-handlers",
+          "title": "Implement command handlers",
+          "status": "todo"
+        }
+      ]
+    },
+    {
+      "id": "ai-settings",
+      "title": "Add AI feature toggle in UI",
+      "description": "Create UI controls to enable/disable AI features and adjust AI settings like response length, creativity, etc.",
+      "category": "ai-features",
+      "status": "todo",
+      "priority": "low",
+      "due": "2025-04-26",
+      "subtasks": [
+        {
+          "id": "toggle-control",
+          "title": "Create on/off toggle for AI features",
+          "status": "todo"
+        },
+        {
+          "id": "settings-ui",
+          "title": "Build settings UI",
+          "status": "todo"
+        },
+        {
+          "id": "persistence",
+          "title": "Persist settings in localStorage",
+          "status": "todo"
+        }
+      ]
+    },
+    {
+      "id": "ai-docs",
+      "title": "Add AI features documentation",
+      "description": "Create comprehensive documentation for AI features, including user guides, technical details, and examples.",
+      "category": "documentation",
+      "status": "todo",
+      "priority": "low",
+      "due": "2025-04-27",
+      "subtasks": [
+        {
+          "id": "user-guide",
+          "title": "Write user guide for AI features",
+          "status": "todo"
+        },
+        {
+          "id": "technical-docs",
+          "title": "Create technical documentation",
+          "status": "todo"
+        },
+        {
+          "id": "examples",
+          "title": "Add usage examples",
+          "status": "todo"
+        }
+      ]
+    }
+  ]
+}

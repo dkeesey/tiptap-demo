@@ -1,0 +1,159 @@
+{
+  "tasks": [
+    {
+      "id": "collab-server",
+      "title": "Improve WebSocket collaboration server",
+      "description": "Enhance the custom WebSocket server for Y.js collaboration with better error handling, reconnection logic, and logging.",
+      "category": "collaboration",
+      "status": "in-progress",
+      "priority": "high",
+      "due": "2025-04-27",
+      "subtasks": [
+        {
+          "id": "error-handling",
+          "title": "Add robust error handling",
+          "status": "in-progress"
+        },
+        {
+          "id": "reconnection",
+          "title": "Implement better reconnection logic",
+          "status": "todo"
+        },
+        {
+          "id": "server-logging",
+          "title": "Reduce excessive server logging",
+          "status": "in-progress"
+        },
+        {
+          "id": "server-config",
+          "title": "Make server configuration more flexible",
+          "status": "todo"
+        }
+      ]
+    },
+    {
+      "id": "collab-context",
+      "title": "Refine collaboration context",
+      "description": "Improve the React context provider for Y.js collaboration with better state management and error handling.",
+      "category": "collaboration",
+      "status": "todo",
+      "priority": "medium",
+      "due": "2025-04-27",
+      "subtasks": [
+        {
+          "id": "state-management",
+          "title": "Improve collaboration state management",
+          "status": "todo"
+        },
+        {
+          "id": "context-errors",
+          "title": "Enhance error handling in context",
+          "status": "todo"
+        },
+        {
+          "id": "awareness-updates",
+          "title": "Optimize awareness updates",
+          "status": "todo"
+        },
+        {
+          "id": "offline-support",
+          "title": "Strengthen offline support",
+          "status": "todo"
+        }
+      ]
+    },
+    {
+      "id": "user-presence",
+      "title": "Enhance user presence features",
+      "description": "Improve user presence indicators, collaborative cursors, and user profiles for a better collaboration experience.",
+      "category": "collaboration",
+      "status": "todo",
+      "priority": "medium",
+      "due": "2025-04-27",
+      "subtasks": [
+        {
+          "id": "cursor-visibility",
+          "title": "Improve collaborative cursor visibility",
+          "status": "todo"
+        },
+        {
+          "id": "user-profiles",
+          "title": "Enhance user profile management",
+          "status": "todo"
+        },
+        {
+          "id": "presence-indicators",
+          "title": "Refine user presence indicators",
+          "status": "todo"
+        },
+        {
+          "id": "selection-highlighting",
+          "title": "Implement better selection highlighting",
+          "status": "todo"
+        }
+      ]
+    },
+    {
+      "id": "collab-ui",
+      "title": "Polish collaboration UI",
+      "description": "Enhance the visual design and user experience of collaboration features, including status indicators and user interface elements.",
+      "category": "collaboration",
+      "status": "todo",
+      "priority": "low",
+      "due": "2025-04-27",
+      "subtasks": [
+        {
+          "id": "status-indicators",
+          "title": "Improve connection status indicators",
+          "status": "todo"
+        },
+        {
+          "id": "user-list",
+          "title": "Enhance connected users display",
+          "status": "todo"
+        },
+        {
+          "id": "room-management",
+          "title": "Refine room creation and joining UI",
+          "status": "todo"
+        },
+        {
+          "id": "collab-settings",
+          "title": "Add collaboration settings interface",
+          "status": "todo"
+        }
+      ]
+    },
+    {
+      "id": "collab-performance",
+      "title": "Optimize collaboration performance",
+      "description": "Identify and address performance issues with real-time collaboration, especially with many concurrent users or large documents.",
+      "category": "collaboration",
+      "status": "todo",
+      "priority": "low",
+      "due": "2025-04-27",
+      "subtasks": [
+        {
+          "id": "sync-efficiency",
+          "title": "Improve sync protocol efficiency",
+          "status": "todo"
+        },
+        {
+          "id": "awareness-throttling",
+          "title": "Implement awareness update throttling",
+          "status": "todo"
+        },
+        {
+          "id": "large-doc-performance",
+          "title": "Optimize performance for large documents",
+          "status": "todo"
+        },
+        {
+          "id": "multi-user-testing",
+          "title": "Test with many concurrent users",
+          "status": "todo"
+        }
+      ]
+    }
+  ]
+}
