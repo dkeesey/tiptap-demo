@@ -1,4 +1,9 @@
-import React, { forwardRef, useImperativeHandle, useState, useEffect, useCallback } from 'react'
+        // Send an escape key event to close any open UI
+        document.dispatchEvent(new KeyboardEvent('keydown', {
+          key: 'Escape',
+          bubbles: true
+        }));import React, { forwardRef, useImperativeHandle, useState, useEffect, useCallback } from 'react'
+import '../../styles/slash-commands.css'
 import { 
   FileTextIcon, 
   Heading1, 
@@ -45,10 +50,31 @@ export default forwardRef((props: SlashCommandsListProps, ref) => {
   const [selectedIndex, setSelectedIndex] = useState(0)
 
   const selectItem = useCallback((index: number) => {
-    const item = props.items[index]
+    const item = props.items[index];
 
     if (item) {
-      props.command(item)
+      console.log('[SlashCommandsList] Selecting item:', item.title);
+      try {
+        // Execute command
+        props.command(item);
+        console.log('[SlashCommandsList] Command callback executed');
+        
+        // Close the menu with Escape key event as a backup
+        setTimeout(() => {
+          // First try to close via popup directly
+          if (window.__lastSlashCommandPopup) {
+            window.__lastSlashCommandPopup.hide();
+          }
+          
+          // Also send escape key as a fallback
+          document.dispatchEvent(new KeyboardEvent('keydown', {
+            key: 'Escape',
+            bubbles: true
+          }));
+        }, 10);
+      } catch (err) {
+        console.error('[SlashCommandsList] Error in command callback:', err);
+      }
     }
   }, [props.items, props.command])
 
@@ -91,26 +117,59 @@ export default forwardRef((props: SlashCommandsListProps, ref) => {
     return null
   }
 
+  // Group commands by category
+  const groupedItems = props.items.reduce((acc, item) => {
+    const category = item.category || 'basic';
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(item);
+    return acc;
+  }, {} as Record<string, SlashCommand[]>);
+
+  // Category display names
+  const categoryNames: Record<string, string> = {
+    basic: 'Basic Blocks',
+    formatting: 'Formatting',
+    ai: 'AI Commands',
+    advanced: 'Advanced'
+  };
+
+  // Order categories
+  const categoryOrder = ['basic', 'formatting', 'ai', 'advanced'];
+  const sortedCategories = Object.keys(groupedItems).sort(
+    (a, b) => categoryOrder.indexOf(a) - categoryOrder.indexOf(b)
+  );
+
   return (
     <div className="slash-commands-list">
       <div className="pt-2 pb-2 max-h-80 overflow-y-auto">
-        <div className="command-category">
-          <span>Commands</span>
-        </div>
-        {props.items.map((item, index) => (
-          <button
-            key={index}
-            className={`command-item ${index === selectedIndex ? 'selected' : ''}`}
-            onClick={() => selectItem(index)}
-          >
-            <div className="command-icon">
-              {commandIcons[item.title] || <FileTextIcon className="w-4 h-4" />}
+        {sortedCategories.map(category => (
+          <div key={category}>
+            <div className="command-category">
+              <span>{categoryNames[category] || category}</span>
             </div>
-            <div className="command-content">
-              <div className="command-title">{item.title}</div>
-              <div className="command-description">{item.description}</div>
-            </div>
-          </button>
+            {groupedItems[category].map((item, itemIndex) => {
+              // Calculate the overall index in the flat list
+              const flatIndex = sortedCategories.slice(0, sortedCategories.indexOf(category))
+                .reduce((sum, cat) => sum + groupedItems[cat].length, 0) + itemIndex;
+                
+              return (
+                <button
+                  key={`${category}-${itemIndex}`}
+                  className={`command-item ${flatIndex === selectedIndex ? 'selected' : ''}`}
+                  onClick={() => selectItem(flatIndex)}
+                  data-category={category}
+                >
+                  <div className="command-icon">
+                    {item.icon || commandIcons[item.title] || <FileTextIcon className="w-4 h-4" />}
+                  </div>
+                  <div className="command-content">
+                    <div className="command-title">{item.title}</div>
+                    <div className="command-description">{item.description}</div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         ))}
         <div className="command-help">
           <div className="command-help-row">

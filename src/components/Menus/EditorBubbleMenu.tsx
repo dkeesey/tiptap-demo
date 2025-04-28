@@ -3,8 +3,13 @@ import { BubbleMenu, Editor } from '@tiptap/react'
 import { 
   Bold, 
   Italic, 
-  Heading1, 
-  Heading2
+  Underline, 
+  Link, 
+  Code, 
+  Highlighter, 
+  AlignLeft, 
+  AlignCenter, 
+  AlignRight
 } from 'lucide-react'
 import { cn } from '../../utils/classnames'
 import { microInteractions } from '../../utils/micro-interactions'
@@ -52,45 +57,49 @@ const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
         placement: 'top',
         offset: [0, 10],
       }}
-      className="bg-white shadow-lg border border-gray-200 rounded-md p-1 flex items-center gap-1 z-50"
+      className="bg-white shadow-lg border border-gray-200 rounded-md p-1 flex flex-col z-50"
       shouldShow={({ editor, state }) => {
         const { selection } = state;
         const { from, to } = selection;
 
-        // Use the debug logger utility
+        // Only log in debug mode to reduce console noise
         debugLog(DebugChannels.BUBBLE_MENU, 'Bubble Menu Visibility Check:', {
           from,
           to,
-          empty: from === to,
+          selectionLength: to - from,
+          hasSelection: from !== to,
           selectedText: from === to 
             ? 'N/A' 
-            : editor.state.doc.textBetween(from, to, ' ').trim(),
-          isActive: editor.isActive('paragraph') || editor.isActive('heading')
+            : editor.state.doc.textBetween(from, to, ' ').trim()
         });
 
-        // Comprehensive check for showing the bubble menu
-        // Multiple conditions must be met:
+        // Simple, clear conditions for showing bubble menu
+        // 1. Must have a text selection (not just a cursor)
+        const hasTextSelection = from !== to;
         
-        // 1. Must have actual text selection (not just cursor placement)
-        const hasSelection = from !== to;
+        // 2. Selection must not be empty
+        const hasNonEmptySelection = editor.state.doc.textBetween(from, to, ' ').trim().length > 0;
         
-        // 2. Selected text must not be empty after trimming
-        const selectedText = hasSelection ? editor.state.doc.textBetween(from, to, ' ').trim() : '';
-        const hasNonEmptySelection = selectedText.length > 0;
+        // 3. Ensure we're in an editable text node
+        const isInEditableNode = true; // Always assume editable for simplicity
         
-        // 3. Selection must be within paragraph or heading nodes
-        const isInSupportedNode = editor.isActive('paragraph') || editor.isActive('heading');
-        
-        // 4. Prevent showing when selecting across node boundaries or complex selections
-        const isSingleLineSelection = !selectedText.includes('\n');
-        
-        // Return true only if all conditions are met
-        return hasSelection && 
-               hasNonEmptySelection && 
-               isInSupportedNode && 
-               isSingleLineSelection;
+        // Combine conditions
+        const shouldShowMenu = hasTextSelection && hasNonEmptySelection && isInEditableNode;
+
+        debugLog(DebugChannels.BUBBLE_MENU, 'Bubble Menu Decision:', {
+          hasTextSelection,
+          hasNonEmptySelection,
+          isInEditableNode,
+          finalDecision: shouldShowMenu
+        });
+
+        return shouldShowMenu;
       }}
     >
+      <div className="px-2 py-1 text-xs font-medium text-gray-500 border-b border-gray-200 mb-1">
+        Text Formatting
+      </div>
+      <div className="flex items-center gap-1 p-1">
       <button
         onClick={() => editor.chain().focus().toggleBold().run()}
         className={cn(
@@ -119,35 +128,113 @@ const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
         <Italic size={14} />
       </button>
 
+      <button
+        onClick={() => editor.chain().focus().toggleUnderline().run()}
+        className={cn(
+          'editor-bubble-menu-button p-1.5 rounded',
+          microInteractions.button,
+          editor.isActive('underline') 
+            ? 'bg-gray-100 text-black' 
+            : 'text-gray-600 hover:bg-gray-50'
+        )}
+        title="Underline"
+      >
+        <Underline size={14} />
+      </button>
+
       <div className="w-px h-5 bg-gray-200 mx-0.5"></div>
 
       <button
-        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+        onClick={() => editor.chain().focus().toggleHighlight().run()}
         className={cn(
           'editor-bubble-menu-button p-1.5 rounded',
           microInteractions.button,
-          editor.isActive('heading', { level: 1 }) 
+          editor.isActive('highlight') 
             ? 'bg-gray-100 text-black' 
             : 'text-gray-600 hover:bg-gray-50'
         )}
-        title="Heading 1"
+        title="Highlight"
       >
-        <Heading1 size={14} />
+        <Highlighter size={14} />
       </button>
 
       <button
-        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+        onClick={() => {
+          const url = window.prompt('Enter link URL');
+          if (url) {
+            editor.chain().focus().setLink({ href: url }).run();
+          }
+        }}
         className={cn(
           'editor-bubble-menu-button p-1.5 rounded',
           microInteractions.button,
-          editor.isActive('heading', { level: 2 }) 
+          editor.isActive('link') 
             ? 'bg-gray-100 text-black' 
             : 'text-gray-600 hover:bg-gray-50'
         )}
-        title="Heading 2"
+        title="Link"
       >
-        <Heading2 size={14} />
+        <Link size={14} />
       </button>
+
+      <button
+        onClick={() => editor.chain().focus().toggleCode().run()}
+        className={cn(
+          'editor-bubble-menu-button p-1.5 rounded',
+          microInteractions.button,
+          editor.isActive('code') 
+            ? 'bg-gray-100 text-black' 
+            : 'text-gray-600 hover:bg-gray-50'
+        )}
+        title="Inline Code"
+      >
+        <Code size={14} />
+      </button>
+
+      <div className="w-px h-5 bg-gray-200 mx-0.5"></div>
+      
+      <button
+        onClick={() => editor.chain().focus().setTextAlign('left').run()}
+        className={cn(
+          'editor-bubble-menu-button p-1.5 rounded',
+          microInteractions.button,
+          editor.isActive({ textAlign: 'left' }) 
+            ? 'bg-gray-100 text-black' 
+            : 'text-gray-600 hover:bg-gray-50'
+        )}
+        title="Align Left"
+      >
+        <AlignLeft size={14} />
+      </button>
+
+      <button
+        onClick={() => editor.chain().focus().setTextAlign('center').run()}
+        className={cn(
+          'editor-bubble-menu-button p-1.5 rounded',
+          microInteractions.button,
+          editor.isActive({ textAlign: 'center' }) 
+            ? 'bg-gray-100 text-black' 
+            : 'text-gray-600 hover:bg-gray-50'
+        )}
+        title="Align Center"
+      >
+        <AlignCenter size={14} />
+      </button>
+
+      <button
+        onClick={() => editor.chain().focus().setTextAlign('right').run()}
+        className={cn(
+          'editor-bubble-menu-button p-1.5 rounded',
+          microInteractions.button,
+          editor.isActive({ textAlign: 'right' }) 
+            ? 'bg-gray-100 text-black' 
+            : 'text-gray-600 hover:bg-gray-50'
+        )}
+        title="Align Right"
+      >
+        <AlignRight size={14} />
+      </button>
+      </div>
     </BubbleMenu>
   );
 };
