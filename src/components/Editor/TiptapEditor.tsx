@@ -17,6 +17,11 @@ const TiptapEditor = ({ content, onChange, aiEnabled = true }: TiptapEditorProps
   const editorRef = useRef(null)
   const [isReady, setIsReady] = useState(false)
   
+  // State for AI menu handling
+  const [selectedText, setSelectedText] = useState<string>('')
+  const [showAiMenu, setShowAiMenu] = useState<boolean>(false)
+  const [menuPosition, setMenuPosition] = useState<{x: number, y: number}>({x: 0, y: 0})
+  
   // Initialize editor with minimal extensions to avoid circular dependencies
   const editor = useEditor({
     extensions: getMinimalExtensions(),
@@ -52,6 +57,48 @@ const TiptapEditor = ({ content, onChange, aiEnabled = true }: TiptapEditorProps
     }
   }, [editor])
 
+  // Monitor selected text for AI menu
+  useEffect(() => {
+    if (editor) {
+      const handleSelectionUpdate = () => {
+        const { state } = editor;
+        const { selection } = state;
+        const { empty } = selection;
+        
+        if (!empty) {
+          const text = editor.state.doc.textBetween(
+            selection.from,
+            selection.to,
+            ' '
+          );
+          
+          setSelectedText(text);
+          setShowAiMenu(true);
+          
+          // Get the position for the menu based on selection
+          const { view } = editor;
+          const { from } = selection;
+          const start = view.coordsAtPos(from);
+          
+          setMenuPosition({
+            x: start.left,
+            y: start.top
+          });
+        } else {
+          setShowAiMenu(false);
+          setSelectedText('');
+        }
+      };
+      
+      // Update on selection change
+      editor.on('selectionUpdate', handleSelectionUpdate);
+      
+      return () => {
+        editor.off('selectionUpdate', handleSelectionUpdate);
+      };
+    }
+  }, [editor]);
+
   if (!editor) {
     return <div className="p-4 text-center text-gray-500">Loading editor...</div>
   }
@@ -71,7 +118,14 @@ const TiptapEditor = ({ content, onChange, aiEnabled = true }: TiptapEditorProps
       {aiEnabled && isReady && (
         <>
           <AISidebar editor={editor} />
-          <AIActionsMenu editor={editor} />
+          {showAiMenu && selectedText && (
+            <AIActionsMenu 
+              editor={editor}
+              selectedText={selectedText}
+              onClose={() => setShowAiMenu(false)}
+              position={menuPosition}
+            />
+          )}
         </>
       )}
     </div>
