@@ -3,6 +3,7 @@ import { saveContent, loadContent, getDefaultContent } from './utils/storage'
 import { CollaborationProvider } from './context/CollaborationContext'
 import { AIProvider } from './context/AI/AIContext'
 import UserPresence from './components/Editor/UserPresence'
+import { DebugToggle } from './components/Debug'
 
 // Import styles
 import './styles/collaboration.css'
@@ -13,7 +14,7 @@ const TiptapEditor = React.lazy(() => import('./components/Editor/TiptapEditor')
 const CollaborativeTiptapEditor = React.lazy(() => import('./components/Editor/CollaborativeTiptapEditor'))
 
 // Define the websocket URL for the collaboration provider
-const websocketUrl = 'ws://localhost:1235' // Match the port in SimpleWebSocketServer.cjs
+const websocketUrl = 'ws://localhost:1236' // Updated to match the new port in SimpleWebSocketServer.cjs
 
 function App() {
   const [editorContent, setEditorContent] = useState('')
@@ -76,6 +77,8 @@ function App() {
   return (
     <AIProvider>
       <div className="min-h-screen bg-gray-50 flex flex-col">
+        {/* Debug Toggle - only shown in development */}
+        <DebugToggle />
         <header className="bg-white shadow-sm border-b border-gray-200">
           <div className="max-w-5xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
             <div>
