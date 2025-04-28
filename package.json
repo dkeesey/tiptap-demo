@@ -10,9 +10,10 @@
     "test": "vitest",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "websocket": "node SimpleWebSocketServer.cjs",
+    "websocket:enhanced": "node EnhancedWebSocketServer.cjs",
     "taskmaster": "npx task-master-ai",
-    "start": "concurrently \"npm:dev\" \"npm:websocket\" \"npm:taskmaster\"",
-    "start:dev": "concurrently \"npm:dev\" \"npm:websocket\"",
+    "start": "concurrently \"npm:dev\" \"npm:websocket:enhanced\" \"npm:taskmaster\"",
+    "start:dev": "concurrently \"npm:dev\" \"npm:websocket:enhanced\"",
     "websocket:debug": "DEBUG=y* node SimpleWebSocketServer.cjs",
     "start:debug": "concurrently \"npm:dev\" \"npm:websocket:debug\""
   },
