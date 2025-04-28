@@ -18,25 +18,50 @@ const colorOptions = [
   '#0E7490', // Cyan
 ];
 
-const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) => {
-  const { currentUser, updateCurrentUser } = useCollaboration();
-  const [userName, setUserName] = useState(currentUser.name);
-  const [userColor, setUserColor] = useState(currentUser.color);
+// Default user state
+const defaultUser = {
+  id: 'local',
+  name: 'You',
+  color: colorOptions[0]
+};
 
-  // Update local state when currentUser changes
+const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) => {
+  const { provider } = useCollaboration();
+  const [userName, setUserName] = useState(defaultUser.name);
+  const [userColor, setUserColor] = useState(defaultUser.color);
+
+  // Update local state when awareness state changes
   useEffect(() => {
-    setUserName(currentUser.name);
-    setUserColor(currentUser.color);
-  }, [currentUser]);
+    if (!provider?.awareness) return;
+    
+    const localState = provider.awareness.getLocalState();
+    if (localState?.user) {
+      setUserName(localState.user.name);
+      setUserColor(localState.user.color);
+    }
+  }, [provider?.awareness]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Update user in context
-    updateCurrentUser({
-      name: userName,
-      color: userColor,
+    if (!provider?.awareness) return;
+    
+    // Update awareness state
+    const currentState = provider.awareness.getLocalState() || {};
+    const currentUser = currentState.user || {};
+    
+    provider.awareness.setLocalState({
+      ...currentState,
+      user: {
+        ...currentUser,
+        name: userName,
+        color: userColor,
+      },
     });
+
+    // Save to localStorage for persistence
+    localStorage.setItem('user-name', userName);
+    localStorage.setItem('user-color', userColor);
     
     onClose();
   };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { UserIcon } from 'lucide-react'
 import { useCollaboration } from '../../context/CollaborationContext'
 import UserProfileModal from './UserProfileModal'
@@ -13,12 +13,51 @@ const getInitials = (name: string): string => {
     .substring(0, 2)
 }
 
+// Default user for when not connected
+const defaultUser = {
+  id: 'local',
+  name: 'You',
+  color: '#6B7280'
+}
+
 const UserPresence: React.FC = () => {
-  const { connectedUsers, connectionStatus, currentUser } = useCollaboration()
+  const { provider, isConnected } = useCollaboration()
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
   
-  // Convert Map to Array for rendering
-  const users = Array.from(connectedUsers.values())
+  // Get connected users from awareness state
+  const users = useMemo(() => {
+    if (!provider?.awareness) return [];
+    
+    // Get all awareness states with their client IDs
+    const states = Array.from(provider.awareness.getStates().entries());
+    const localClientID = provider.awareness.clientID;
+    
+    console.log('All awareness states:', states.map(([id, state]) => ({
+      clientID: id,
+      userID: state.user?.id,
+      name: state.user?.name
+    })));
+    
+    console.log('Local client ID:', localClientID);
+    
+    // Filter by client ID (not user ID) to ensure all connections are shown
+    const otherUsers = states
+      .filter(([clientID, state]) => {
+        // Only filter out the current client connection and entries without user data
+        return clientID !== localClientID && Boolean(state.user);
+      })
+      .map(([_, state]) => state.user);
+    
+    console.log('Filtered users for display:', otherUsers);
+    return otherUsers;
+  }, [provider?.awareness]);
+
+  // Get current user from awareness state
+  const currentUser = useMemo(() => {
+    if (!provider?.awareness) return defaultUser;
+    const localState = provider.awareness.getLocalState();
+    return localState?.user || defaultUser;
+  }, [provider?.awareness]);
   
   return (
     <div className="connected-users">
@@ -38,30 +77,34 @@ const UserPresence: React.FC = () => {
       </button>
       
       {/* Connected users */}
-      {users.length > 0 ? (
-        <>
-          <div className="text-xs text-gray-500 flex items-center mr-2">
-            {users.length} {users.length === 1 ? 'user' : 'users'} connected
-          </div>
-          <div className="flex -space-x-2 overflow-hidden">
-            {users.map((user) => (
-              <div
-                key={user.id}
-                className={`user-avatar ${connectionStatus === 'connected' ? 'online' : ''}`}
-                style={{ backgroundColor: user.color }}
-                title={user.name}
-              >
-                {user.avatar ? (
-                  <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full" />
-                ) : (
-                  getInitials(user.name)
-                )}
-              </div>
-            ))}
-          </div>
-        </>
+      {isConnected ? (
+        users.length > 0 ? (
+          <>
+            <div className="text-xs text-gray-500 flex items-center mr-2">
+              {users.length} {users.length === 1 ? 'user' : 'users'} connected
+            </div>
+            <div className="flex -space-x-2 overflow-hidden">
+              {users.map((user) => (
+                <div
+                  key={user.id}
+                  className="user-avatar"
+                  style={{ backgroundColor: user.color }}
+                  title={user.name}
+                >
+                  {user.avatar ? (
+                    <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full" />
+                  ) : (
+                    getInitials(user.name)
+                  )}
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="text-xs text-gray-500">No other users connected</div>
+        )
       ) : (
-        <div className="text-xs text-gray-500">No other users connected</div>
+        <div className="text-xs text-gray-500">Disconnected</div>
       )}
       
       {/* Profile Modal */}
