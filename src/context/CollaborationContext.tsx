@@ -66,7 +66,7 @@ export const CollaborationProvider: React.FC<CollaborationProviderProps> = ({
   children,
   roomName = 'tiptap-demo-default-room',
   // Default websocket URL
-  websocketUrl = 'ws://localhost:1235',
+  websocketUrl = 'ws://localhost:1236', // Updated to match new port in SimpleWebSocketServer.cjs
 }) => {
   // State for managing user and connection
   const [ydoc] = useState(() => new Y.Doc());
