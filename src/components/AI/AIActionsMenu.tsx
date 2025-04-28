@@ -1,4 +1,5 @@
-/**
+// Add missing prop definitions for TipTap context
+import { Editor } from '@tiptap/react';/**
  * AIActionsMenu.tsx
  * A floating menu for AI actions on selected text
  */
@@ -8,10 +9,10 @@ import { useAI } from '../../context/AI/AIContext';
 import { Sparkles, Layers, ZoomIn, ZoomOut, Edit3, MessageSquare, ArrowRight } from 'lucide-react';
 
 interface AIActionsMenuProps {
-  editor: any; // TipTap Editor instance
+  editor: Editor; // Added specific Editor type
   selectedText: string;
   onClose: () => void;
-  position: { x: number; y: number };
+  position?: { x: number; y: number }; // Make position optional
 }
 
 interface AIAction {
@@ -71,9 +72,21 @@ const AIActionsMenu: React.FC<AIActionsMenuProps> = ({
   editor, 
   selectedText, 
   onClose, 
-  position 
+  position = { x: 0, y: 0 } // Provide default value
 }) => {
   const { isGenerating } = useAI();
+  
+  // Safety check - return null if editor is not defined
+  if (!editor) {
+    console.error('AIActionsMenu: editor is undefined');
+    return null;
+  }
+  
+  // Additional safety check for position
+  if (!position || typeof position.x !== 'number' || typeof position.y !== 'number') {
+    console.error('AIActionsMenu: Invalid position object', position);
+    position = { x: 0, y: 0 };
+  }
   
   // Execute an action on the selected text
   const executeAction = (action: AIAction) => {
@@ -105,6 +118,23 @@ const AIActionsMenu: React.FC<AIActionsMenuProps> = ({
     onClose();
   };
   
+  // Additional validation check for selectedText
+  if (!selectedText || selectedText.trim() === '') {
+    console.warn('AIActionsMenu: No text selected');
+    // Return minimal component when no text is selected
+    return (
+      <div className="ai-actions-menu-error p-2 text-center">
+        <span className="text-sm text-red-500">No text selected</span>
+        <button 
+          onClick={onClose} 
+          className="block mx-auto mt-1 text-xs bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded"
+        >
+          Close
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div 
       className="ai-actions-menu absolute z-50 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 p-1"
