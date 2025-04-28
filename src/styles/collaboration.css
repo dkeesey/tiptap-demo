@@ -3,17 +3,23 @@
   position: relative;
   margin-left: -1px;
   margin-right: -1px;
-  border-left: 1px solid;
-  border-right: 1px solid;
-  border-color: #0d0;
+  border-left: 2px solid; /* Increased width for better visibility */
+  border-right: 0;
   word-break: normal;
   pointer-events: none;
+  animation: cursor-blink 1.3s steps(2) infinite; /* Add blinking effect */
+}
+
+@keyframes cursor-blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
 }
 
 /* Cursor label styles */
 .collaboration-cursor-label {
   position: absolute;
-  top: -1.4em;
+  top: -1.6em;
   left: -1px;
   font-size: 12px;
   font-weight: 600;
@@ -21,9 +27,22 @@
   white-space: nowrap;
   color: white;
   padding: 0.1rem 0.3rem;
-  border-radius: 3px 3px 3px 0;
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
   user-select: none;
   z-index: 50;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
+}
+
+/* Show cursor label only on hover or active */
+.collaboration-cursor:hover .collaboration-cursor-label,
+.collaboration-cursor:active .collaboration-cursor-label {
+  opacity: 1;
+  max-width: none;
 }
 
 /* Connection status styles */
@@ -45,8 +64,8 @@
 
 /* User avatars in editor */
 .user-avatar {
-  width: 24px;
-  height: 24px;
+  width: 28px; /* Slightly larger for better visibility */
+  height: 28px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -54,18 +73,32 @@
   font-weight: bold;
   color: white;
   font-size: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
+}
+
+.user-avatar:hover {
+  transform: scale(1.1);
 }
 
 /* User list styles */
 .connected-users {
   display: flex;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.75rem;
   padding: 0.5rem 1rem;
   border-bottom: 1px solid #e5e7eb;
+  background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+  backdrop-filter: blur(5px); /* Add blur effect for modern browsers */
 }
 
 .connected-users .user-avatar {
   position: relative;
+  transition: transform 0.2s ease;
+}
+
+.connected-users .user-avatar:hover {
+  transform: scale(1.1);
 }
 
 .connected-users .user-avatar.online::after {
@@ -77,5 +110,18 @@
   height: 8px;
   background-color: #10b981;
   border-radius: 50%;
-  border: 1px solid white;
+  border: 2px solid white;
+  animation: pulse 2s infinite; /* Add pulsing effect */
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 5px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
 }
