@@ -67,7 +67,7 @@
       "title": "Enhance user presence features",
       "description": "Improve user presence indicators, collaborative cursors, and user profiles for a better collaboration experience.",
       "category": "collaboration",
-      "status": "todo",
+      "status": "in-progress",
       "priority": "medium",
       "due": "2025-04-27",
       "subtasks": [
