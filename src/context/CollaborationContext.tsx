@@ -1,8 +1,9 @@
-import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
+import React, { createContext, useState, useContext, useEffect, ReactNode, useRef, useCallback, useMemo } from 'react';
 import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
 import { syncedStore, getYjsValue } from '@syncedstore/core';
 import { UndoManager } from 'yjs';
+import { Awareness } from 'y-protocols/awareness';
 
 // Updated approach to handle logging without relying on Y.logging
 // Instead of trying to access internal logging API that doesn't exist,
@@ -67,379 +68,210 @@ type ConnectionStatus = 'connected' | 'connecting' | 'disconnected';
 
 // Type for our collaboration context
 interface CollaborationContextType {
-  ydoc: Y.Doc;
   provider: WebsocketProvider | null;
-  isOnline: boolean;
-  connectionStatus: ConnectionStatus;
-  currentUser: User;
-  connectedUsers: Map<string, User>;
-  updateCurrentUser: (user: Partial<User>) => void;
-  storeRef: any;
-  undoManager?: UndoManager;
+  ydoc: Y.Doc;
+  isConnected: boolean;
+  error: string | null;
 }
 
 const defaultUser: User = {
-  id: '',
-  name: '',
-  color: '',
+  id: 'local',
+  name: 'You',
+  color: '#6B7280',
+};
+
+// Generate a random color
+const getRandomColor = () => {
+  const colors = [
+    '#f44336', '#e91e63', '#9c27b0', '#673ab7', 
+    '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', 
+    '#009688', '#4caf50', '#8bc34a', '#cddc39', 
+    '#ffc107', '#ff9800', '#ff5722'
+  ];
+  return colors[Math.floor(Math.random() * colors.length)];
 };
 
 // Create context with default values
 const CollaborationContext = createContext<CollaborationContextType>({
-  ydoc: new Y.Doc(),
   provider: null,
-  isOnline: false,
-  connectionStatus: 'disconnected',
-  currentUser: defaultUser,
-  connectedUsers: new Map(),
-  updateCurrentUser: () => {},
-  storeRef: null,
-  undoManager: undefined,
+  ydoc: new Y.Doc(),
+  isConnected: false,
+  error: null
 });
 
 interface CollaborationProviderProps {
   children: ReactNode;
-  roomName?: string;
-  websocketUrl?: string;
+  room: string;
 }
 
-export const CollaborationProvider: React.FC<CollaborationProviderProps> = ({
-  children,
-  roomName = 'tiptap-demo-default-room',
-  // Default websocket URL
-  websocketUrl = 'ws://localhost:1236', // Updated to match new port in SimpleWebSocketServer.cjs
-}) => {
-  // State for managing user and connection
-  const [ydoc] = useState(() => new Y.Doc());
+export const CollaborationProvider: React.FC<CollaborationProviderProps> = ({ children, room }) => {
   const [provider, setProvider] = useState<WebsocketProvider | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
-  const [currentUser, setCurrentUser] = useState<User>(() => {
-    // Try to get saved user from localStorage
-    const savedUser = localStorage.getItem('collaborationUser');
-    if (savedUser) {
-      try {
-        const parsedUser = JSON.parse(savedUser);
-        // Verify that parsed user has valid fields
-        if (parsedUser && parsedUser.id && parsedUser.name && parsedUser.color) {
-          console.log('Retrieved existing user from localStorage:', parsedUser.id);
-          return parsedUser;
-        } else {
-          console.warn('Parsed user from localStorage is missing required fields');
-        }
-      } catch (e) {
-        console.error('Failed to parse saved user:', e);
-      }
+  const [isConnected, setIsConnected] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const ydoc = useMemo(() => new Y.Doc(), []);
+  const retryCount = useRef(0);
+  const maxRetries = 3;
+  const isCleaningUp = useRef(false);
+
+  const connectWithRetry = useCallback(async () => {
+    // Don't attempt to connect if we're cleaning up
+    if (isCleaningUp.current) return;
+    
+    if (retryCount.current >= maxRetries) {
+      setError('Maximum connection attempts reached');
+      return;
     }
-    
-    // Generate a persistent user ID that won't change on reload
-    // Use deviceId if available, or create a new one and store it
-    const getOrCreateUserId = () => {
-      // Get persistent base ID from localStorage
-      const storedId = localStorage.getItem('collaborationUserId');
-      const baseId = storedId || `user-${Math.floor(Math.random() * 100000)}`;
-      
-      // Store the base ID if it's new
-      if (!storedId) {
-        try {
-          localStorage.setItem('collaborationUserId', baseId);
-        } catch (e) {
-          console.error('Failed to save user ID to localStorage:', e);
-        }
-      }
-      
-      // Add a session-specific unique component
-      // This ensures different browser instances get different IDs
-      // Uses both timestamp and random value for uniqueness
-      const sessionComponent = `${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-      const sessionId = `${baseId}-session-${sessionComponent}`;
-      
-      // Store the session ID in sessionStorage so it persists during the session
-      // but not between different tabs/windows
-      try {
-        sessionStorage.setItem('collaborationSessionId', sessionId);
-      } catch (e) {
-        console.error('Failed to save session ID to sessionStorage:', e);
-      }
-      
-      return sessionId;
-    };
-    
-    // Generate different predefined colors
-    const userColors = [
-      '#FF5733', // Coral red
-      '#33A8FF', // Sky blue
-      '#33FF57', // Mint green
-      '#F033FF', // Pink
-      '#FFD700', // Gold
-      '#9370DB', // Medium purple
-      '#00CED1', // Dark turquoise
-      '#FF6347', // Tomato
-      '#20B2AA', // Light sea green
-      '#6495ED', // Cornflower blue
-    ];
-    
-    // Create new user if none exists or parsing failed
-    const newUser = {
-      id: getOrCreateUserId(),
-      name: `User ${Math.floor(Math.random() * 100)}-${Math.floor(Math.random() * 1000)}`,
-      // Use a consistent color based on a hash of the session ID to ensure different colors
-      color: userColors[Math.abs(getOrCreateUserId().split('-').reduce((acc, part) => acc + part.charCodeAt(0), 0)) % userColors.length],
-    };
-    
-    // Save to localStorage
-    try {
-      localStorage.setItem('collaborationUser', JSON.stringify(newUser));
-    } catch (e) {
-      console.error('Failed to save user to localStorage:', e);
-    }
-    
-    console.log('Created new user:', newUser.id);
-    return newUser;
-  });
-  const [connectedUsers, setConnectedUsers] = useState<Map<string, User>>(new Map());
-  
-  // Create synced store using Y.js document
-  const [storeRef] = useState(() => {
-    // The first argument (initial state) for the root store must be {}
-    return syncedStore({}, ydoc);
-  });
 
-  // Create UndoManager
-  const [undoManager] = useState(() => {
-    // Track changes to the document fragment
-    const fragment = ydoc.getXmlFragment('document');
-    
-    // Use default UndoManager settings to track local changes
-    return new UndoManager(fragment);
-  });
-
-  // Effect to set up WebSocket provider
-  useEffect(() => {
-    // Set connecting status while we attempt to connect - minimize logging
-    setConnectionStatus('connecting');
-    
-    console.log(`Attempting to connect to WebSocket at ${websocketUrl}/${roomName}`);
-    
-    // Function to create a fallback connection if primary fails
-    const createFallbackConnection = () => {
-      try {
-        // Try alternative port 1235 as fallback
-        const fallbackUrl = websocketUrl.replace('1236', '1235');
-        console.log(`Trying fallback WebSocket connection on ${fallbackUrl}`);
-        
-        const wsProvider = new WebsocketProvider(fallbackUrl, roomName, ydoc, { 
-          connect: true,
-          maxBackoffTime: 5000,
-          disableBc: false,
-          resyncInterval: 10000,
-          // logging: false, // Removed invalid property
-        });
-        
-        console.log('Fallback WebSocket provider created successfully');
-        setProvider(wsProvider);
-        
-        setupProviderEventListeners(wsProvider);
-      } catch (err) {
-        console.error('Failed to create fallback WebSocket provider:', err);
-        setConnectionStatus('disconnected');
-      }
-    };
-    
-    // Create WebSocket provider
-    let wsProvider: WebsocketProvider;
-    try {
-      // Check if WebSocket server is running by making a test connection first
-      const testSocket = new WebSocket(`${websocketUrl}/${roomName}`);
-      
-      testSocket.onopen = () => {
-        console.log('WebSocket connection test successful, creating provider');
-        testSocket.close();
-        
-        // More robust configuration for WebSocket provider
-        wsProvider = new WebsocketProvider(websocketUrl, roomName, ydoc, { 
-          connect: true,
-          maxBackoffTime: 5000,  // Increased max backoff time for reconnection attempts
-          disableBc: false,      // Enable BroadcastChannel as fallback
-          resyncInterval: 10000, // Resync every 10 seconds if disconnected
-          // logging: false,      // Removed invalid property
-        });
-        
-        console.log('WebSocket provider created successfully');
-        setProvider(wsProvider);
-        
-        // Make an initial connection attempt
-        if (!wsProvider.shouldConnect) {
-          console.log('Initial connection attempt...');
-          wsProvider.connect();
-        }
-        
-        setupProviderEventListeners(wsProvider);
-      };
-      
-      testSocket.onerror = (error: Event) => {
-        console.error('WebSocket connection test failed:', error);
-        setConnectionStatus('disconnected');
-        // Try to create a fallback connection to alternative port if primary fails
-        createFallbackConnection();
-      };
-      
-    } catch (err) {
-      console.error('Failed to create WebSocket provider:', err);
-      setConnectionStatus('disconnected');
-      // Try to create a fallback connection to alternative port
-      createFallbackConnection();
-    }
-    
-    // Function to set up event listeners for the provider
-    const setupProviderEventListeners = (wsProvider: WebsocketProvider) => {
-
-    // Only add essential event listeners, remove those causing excessive logs
-    wsProvider.on('status', (event: { status: string }) => {
-      console.log(`WebSocket status changed: ${event.status}`);
-      if (event.status === 'connected') {
-        setConnectionStatus('connected');
-        
-        // Force awareness update to notify others of our presence
-        try {
-          wsProvider.awareness.setLocalStateField('user', {
-            id: currentUser.id,
-            name: currentUser.name,
-            color: currentUser.color,
-            avatar: currentUser.avatar
-          });
-        } catch (err) {
-          console.error('Failed to set awareness field:', err);
-        }
-      } else if (event.status === 'connecting') {
-        setConnectionStatus('connecting');
-      } else {
-        setConnectionStatus('disconnected');
-      }
-    });
-    
-    // Error handler with limited logging
-    wsProvider.on('connection-error', (error: Error) => {
-      // Log the first error but avoid flooding
-      console.error('WebSocket connection error:', error);
-      if (connectionStatus !== 'disconnected') {
-        setConnectionStatus('disconnected');
-      }
-    });
-    
-    // Connection close handler with limited logging
-    wsProvider.on('connection-close', () => {
-      console.log('WebSocket connection closed');
-      if (connectionStatus !== 'disconnected') {
-        setConnectionStatus('disconnected');
-      }
-    });
-    
-    // Set awareness (user presence) - with minimal logging
-    try {
-      // Set initial user state
-      wsProvider.awareness.setLocalStateField('user', {
-        id: currentUser.id,
-        name: currentUser.name,
-        color: currentUser.color,
-        avatar: currentUser.avatar
-      });
-    } catch (err) {
-      // Silent error handling
-    }
-    
-    // Listen for changes in user presence - minimal event processing
-    const awarenessHandler = () => {
-      try {
-        // Throttle awareness updates to reduce event frequency
-        if (wsProvider && wsProvider.awareness) {
-          const states = wsProvider.awareness.getStates() as Map<number, { user: User }>;
-          const users = new Map<string, User>();
-          
-          states.forEach((state, clientId) => {
-            if (state.user && state.user.id) {
-              users.set(state.user.id, state.user);
-            }
-          });
-          
-          setConnectedUsers(users);
-        }
-      } catch (err) {
-        // Silent error handling
-      }
-    };
-
-      // Add awareness handler and throttle its execution to reduce events
-      let throttleTimeout: NodeJS.Timeout | null = null;
-      const throttledAwarenessHandler = () => {
-        if (throttleTimeout) {
-          clearTimeout(throttleTimeout);
-        }
-        throttleTimeout = setTimeout(awarenessHandler, 1000); // Only update once per second max
-      };
-
-      wsProvider.awareness.on('change', throttledAwarenessHandler);
-      awarenessHandler(); // Initial call to populate connected users
-      
-      // Document update handler - with no logging
-      const documentUpdateHandler = () => {
-        // Remove all logging, just let Y.js handle the updates
-      };
-      
-      // Add document update handler but throttle to reduce frequency
-      ydoc.on('update', documentUpdateHandler);
-    };
-    
-    // Clean up function
-    return () => {
-      // Clean up will be handled by the websocket provider itself
-      if (provider) {
-        try {
-          // Use empty function instead of null for type safety
-          provider.awareness.off('change', () => {});
-          provider.disconnect();
-        } catch (err) {
-          console.error('Error during cleanup:', err);
-        }
-      }
-      
-      // Clean up any document listeners
-      ydoc.off('update', () => {});
-    };
-  }, [ydoc, roomName, websocketUrl, currentUser.id, currentUser.name, currentUser.color, currentUser.avatar]);
-
-  // Update current user info - without logging
-  const updateCurrentUser = (userUpdate: Partial<User>) => {
-    const updatedUser = { ...currentUser, ...userUpdate };
-    setCurrentUser(updatedUser);
-    
-    // Save updated user to localStorage
-    try {
-      localStorage.setItem('collaborationUser', JSON.stringify(updatedUser));
-    } catch (e) {
-      // Silent error handling
-    }
-    
+    // Clean up existing provider before creating a new one
     if (provider) {
-      try {
-        provider.awareness.setLocalStateField('user', updatedUser);
-      } catch (e) {
-        // Silent error handling
+      provider.disconnect();
+      provider.destroy();
+      setProvider(null);
+    }
+
+    try {
+      console.log('Attempting to connect to room:', room);
+      
+      // Configure WebSocket options
+      const wsOptions = { 
+        connect: true,
+        maxBackoffTime: 5000,
+        disableBc: true // Disable broadcast channel to avoid cross-tab complications
+      };
+      
+      console.log('Creating WebSocket provider with options:', wsOptions);
+      
+      const wsProvider = new WebsocketProvider(
+        'ws://localhost:1236', // Base WebSocket URL
+        room,                  // Room name (will be properly encoded)
+        ydoc,                  // Y.js document
+        wsOptions              // Connection options
+      );
+
+      // Set up initial user awareness
+      const username = localStorage.getItem('user-name') || `User-${Math.floor(Math.random() * 10000)}`;
+      const userColor = localStorage.getItem('user-color') || getRandomColor();
+      
+      // Generate a unique ID that persists across browser sessions
+      let userId = localStorage.getItem('user-id');
+      if (!userId) {
+        userId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        localStorage.setItem('user-id', userId);
+      }
+      
+      // IMPORTANT: Use the provider's client ID for this specific connection
+      const clientId = wsProvider.awareness.clientID;
+      
+      // Set up the local awareness state
+      wsProvider.awareness.setLocalState({
+        user: {
+          id: userId,         // Persistent user ID (same across tabs for same browser/user)
+          clientId: clientId, // Connection-specific ID (different for each tab/connection)
+          name: username,
+          color: userColor,
+        }
+      });
+      
+      // Log awareness state for debugging
+      console.log('Initial awareness state set:', {
+        userId,
+        clientId,
+        username,
+        userColor
+      });
+      
+      // Add awareness event listener to track user connections
+      wsProvider.awareness.on('update', ({ added, updated, removed }) => {
+        const states = Array.from(wsProvider.awareness.getStates().entries());
+        const clientCount = states.length;
+        const userCount = states.filter(([_, state]) => Boolean(state.user)).length;
+        
+        console.log('Awareness update:', { 
+          added: added.length > 0 ? added : [], 
+          updated: updated.length > 0 ? updated : [], 
+          removed: removed.length > 0 ? removed : [] 
+        });
+        
+        console.log('Connection stats:', {
+          clientCount,
+          userCount,
+          clientIDs: states.map(([id]) => id)
+        });
+        
+        // Log each connected user with their client ID and user ID
+        console.log('Current users:', states
+          .filter(([_, state]) => Boolean(state.user))
+          .map(([clientID, state]) => ({
+            clientID,
+            userID: state.user.id,
+            name: state.user.name
+          }))
+        );
+      });
+
+      wsProvider.on('status', ({ status }: { status: 'connected' | 'disconnected' }) => {
+        if (isCleaningUp.current) return;
+        
+        console.log('WebSocket status:', status);
+        setIsConnected(status === 'connected');
+        if (status === 'connected') {
+          retryCount.current = 0;
+          setError(null);
+        }
+      });
+
+      wsProvider.on('connection-error', (err: Error) => {
+        if (isCleaningUp.current) return;
+        
+        console.error('WebSocket connection error:', err);
+        setError(err.message);
+        retryCount.current++;
+        
+        // Only retry if we haven't reached max retries and we're not cleaning up
+        if (retryCount.current < maxRetries && !isCleaningUp.current) {
+          const delay = Math.min(1000 * Math.pow(2, retryCount.current), 5000);
+          setTimeout(() => connectWithRetry(), delay);
+        }
+      });
+
+      setProvider(wsProvider);
+    } catch (err) {
+      if (isCleaningUp.current) return;
+      
+      console.error('Failed to create WebSocket provider:', err);
+      setError(err instanceof Error ? err.message : 'Failed to connect');
+      retryCount.current++;
+      
+      // Only retry if we haven't reached max retries and we're not cleaning up
+      if (retryCount.current < maxRetries && !isCleaningUp.current) {
+        const delay = Math.min(1000 * Math.pow(2, retryCount.current), 5000);
+        setTimeout(() => connectWithRetry(), delay);
       }
     }
-  };
+  }, [ydoc, room, provider]);
 
-  // Provide context value
-  const contextValue: CollaborationContextType = {
-    ydoc,
+  // Effect to handle connection
+  useEffect(() => {
+    isCleaningUp.current = false;
+    retryCount.current = 0;
+    connectWithRetry();
+
+    return () => {
+      isCleaningUp.current = true;
+      if (provider) {
+          provider.disconnect();
+        provider.destroy();
+      }
+      ydoc.destroy();
+    };
+  }, [room]); // Only reconnect when room changes
+
+  const contextValue = useMemo(() => ({
     provider,
-    isOnline: connectionStatus === 'connected',
-    connectionStatus,
-    currentUser,
-    connectedUsers,
-    updateCurrentUser,
-    storeRef,
-    undoManager,
-  };
+    ydoc,
+    isConnected,
+    error
+  }), [provider, ydoc, isConnected, error]);
 
   return (
     <CollaborationContext.Provider value={contextValue}>
