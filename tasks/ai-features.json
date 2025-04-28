@@ -140,7 +140,7 @@
       "title": "Implement inline AI suggestions",
       "description": "Create a mechanism for inline AI completions that can be triggered with a slash command. The suggestions should be visually distinguished from user content and provide options to accept, reject, or modify.",
       "category": "ai-features",
-      "status": "todo",
+      "status": "in-progress",
       "priority": "high",
       "due": "2025-04-26",
       "subtasks": [
@@ -171,7 +171,7 @@
       "title": "Enhance slash commands with AI options",
       "description": "Add AI-related commands to the existing slash command interface, including options for creating AI prompts, getting inline suggestions, and accessing the AI sidebar.",
       "category": "ai-features",
-      "status": "todo",
+      "status": "review",
       "priority": "medium",
       "due": "2025-04-26",
       "subtasks": [
