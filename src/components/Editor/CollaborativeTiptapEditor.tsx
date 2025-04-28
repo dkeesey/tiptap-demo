@@ -9,6 +9,7 @@ import AIActionsMenu from '../AI/AIActionsMenu'
 import { useCollaboration } from '../../context/CollaborationContext'
 import { getYjsValue } from '@syncedstore/core'
 import AiPromptNode from '../../extensions/AiPromptNode'
+import { ConnectionDebugger } from '../Debug'
 
 // CSS for collaboration cursors
 import '../../styles/collaboration.css'
@@ -30,10 +31,15 @@ interface CollaborativeTiptapEditorProps {
 
 const CollaborativeTiptapEditor = ({ onChange, aiEnabled = true }: CollaborativeTiptapEditorProps) => {
   console.log('[Editor Component] Rendering CollaborativeTiptapEditor...');
-  const { ydoc, provider, currentUser, connectionStatus } = useCollaboration()
+  const { ydoc, provider, isConnected, error } = useCollaboration()
   const [statusMessage, setStatusMessage] = useState<string>('')
   const [isReady, setIsReady] = useState(false)
   const editorRef = useRef(null)
+  
+  // State for AI menu handling
+  const [selectedText, setSelectedText] = useState<string>('')
+  const [showAiMenu, setShowAiMenu] = useState<boolean>(false)
+  const [menuPosition, setMenuPosition] = useState<{x: number, y: number}>({x: 0, y: 0})
 
   // Get XML fragment for the document
   const fragment = ydoc.getXmlFragment('document')
@@ -44,7 +50,7 @@ const CollaborativeTiptapEditor = ({ onChange, aiEnabled = true }: Collaborative
   const isCollaborationActive = provider !== null;
 
   // Silence all logging
-  // console.log('[Editor Collaboration] Status:', connectionStatus, 'Active:', isCollaborationActive);
+  // console.log('[Editor Collaboration] Status:', isConnected ? 'connected' : 'disconnected', 'Active:', isCollaborationActive);
   // if (provider) {
   //   console.log('[Editor Collaboration] Provider connected to room:', provider.roomname);
   // }
@@ -57,7 +63,11 @@ const CollaborativeTiptapEditor = ({ onChange, aiEnabled = true }: Collaborative
         ? getCollaborativeExtensions({
             ydoc,
             provider,
-            user: currentUser,
+            user: provider?.awareness?.getLocalState()?.user || { 
+              id: 'local',
+              name: 'You',
+              color: '#6B7280'
+            },
           }) 
         : [
             // Fallback to basic extensions when collaboration is unavailable
@@ -116,6 +126,48 @@ const CollaborativeTiptapEditor = ({ onChange, aiEnabled = true }: Collaborative
     }
   }, [editor])
 
+  // Monitor selected text for AI menu
+  useEffect(() => {
+    if (editor) {
+      const handleSelectionUpdate = () => {
+        const { state } = editor;
+        const { selection } = state;
+        const { empty } = selection;
+        
+        if (!empty) {
+          const text = editor.state.doc.textBetween(
+            selection.from,
+            selection.to,
+            ' '
+          );
+          
+          setSelectedText(text);
+          setShowAiMenu(true);
+          
+          // Get the position for the menu based on selection
+          const { view } = editor;
+          const { from } = selection;
+          const start = view.coordsAtPos(from);
+          
+          setMenuPosition({
+            x: start.left,
+            y: start.top
+          });
+        } else {
+          setShowAiMenu(false);
+          setSelectedText('');
+        }
+      };
+      
+      // Update on selection change
+      editor.on('selectionUpdate', handleSelectionUpdate);
+      
+      return () => {
+        editor.off('selectionUpdate', handleSelectionUpdate);
+      };
+    }
+  }, [editor]);
+
   // Debug logging - comment out to reduce console output
   // useEffect(() => {
   //   if (editor) {
@@ -132,19 +184,14 @@ const CollaborativeTiptapEditor = ({ onChange, aiEnabled = true }: Collaborative
 
   // Update status message based on connection status
   useEffect(() => {
-    switch (connectionStatus) {
-      case 'connected':
-        setStatusMessage('Connected')
-        break
-      case 'connecting':
-        setStatusMessage('Connecting to collaboration server...')
-        break
-      case 'disconnected':
-        // Use a more reliable message that won't flicker or change rapidly
-        setStatusMessage('Offline - Your changes are saved and will sync when reconnected')
-        break
+    if (isConnected) {
+      setStatusMessage('Connected')
+    } else if (error) {
+      setStatusMessage('Offline - Your changes are saved and will sync when reconnected')
+    } else {
+      setStatusMessage('Connecting to collaboration server...')
     }
-  }, [connectionStatus])
+  }, [isConnected, error])
 
   if (!editor) {
     return <div className="p-4 text-center text-gray-500">Loading editor...</div>
@@ -156,17 +203,26 @@ const CollaborativeTiptapEditor = ({ onChange, aiEnabled = true }: Collaborative
       
       {/* Connection status indicator */}
       <div className={`connection-status px-4 py-1 text-xs ${
-        connectionStatus === 'connected' ? 'bg-green-50 text-green-700' :
-        connectionStatus === 'connecting' ? 'bg-yellow-50 text-yellow-700' :
-        'bg-red-50 text-red-700'
+        isConnected ? 'bg-green-50 text-green-700' :
+        error ? 'bg-red-50 text-red-700' :
+        'bg-yellow-50 text-yellow-700'
       }`}>
-        <div className="flex items-center">
-          <div className={`w-2 h-2 rounded-full mr-2 ${
-            connectionStatus === 'connected' ? 'bg-green-500' :
-            connectionStatus === 'connecting' ? 'bg-yellow-500' :
-            'bg-red-500'
-          }`}></div>
-          {statusMessage}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <div className={`w-2 h-2 rounded-full mr-2 ${
+              isConnected ? 'bg-green-500' :
+              error ? 'bg-red-500' :
+              'bg-yellow-500'
+            }`}></div>
+            {statusMessage}
+          </div>
+          
+          {/* Show user count */}
+          {isConnected && provider?.awareness && (
+            <div className="text-xs">
+              {provider.awareness.getStates().size || 1} user{(provider.awareness.getStates().size || 1) !== 1 ? 's' : ''} connected
+            </div>
+          )}
         </div>
       </div>
       
@@ -178,11 +234,29 @@ const CollaborativeTiptapEditor = ({ onChange, aiEnabled = true }: Collaborative
         className="editor-content border-t border-gray-200 p-4"
       />
       
+      {/* Info tip for slash commands */}
+      <div className="text-xs text-gray-500 px-4 py-2 bg-blue-50 border-t border-blue-100 flex items-center">
+        <svg className="w-4 h-4 mr-1 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clipRule="evenodd" />
+        </svg>
+        <span>Type <kbd className="px-1 py-0.5 bg-gray-100 text-gray-800 rounded border border-gray-300 font-mono">/</kbd> to use slash commands for formatting</span>
+      </div>
+      
+      {/* Connection debugger (only shown in development mode) */}
+      {process.env.NODE_ENV === 'development' && <ConnectionDebugger />}
+      
       {/* AI components */}
       {aiEnabled && isReady && (
         <>
           <AISidebar editor={editor} />
-          <AIActionsMenu editor={editor} />
+          {showAiMenu && selectedText && (
+            <AIActionsMenu 
+              editor={editor}
+              selectedText={selectedText}
+              onClose={() => setShowAiMenu(false)}
+              position={menuPosition}
+            />
+          )}
         </>
       )}
     </div>
