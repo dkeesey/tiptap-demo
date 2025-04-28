@@ -5,6 +5,8 @@
 ### Overview
 The TipTap demo project uses a taskmaster system for tracking task status, priorities, and progress. This system is set up in `~/Workspace/tiptap-demo/` and consists of configuration files and task definitions organized by category.
 
+> **Important**: For detailed instructions on taskmaster usage, refer to [taskmaster_usage.md](./taskmaster_usage.md) which contains comprehensive guidance on task management, claiming tasks, handling dependencies, and agent coordination.
+
 ### Taskmaster Structure
 1. **Main configuration**: `~/Workspace/tiptap-demo/taskmaster.json`
    - Defines categories, status options, and priorities
