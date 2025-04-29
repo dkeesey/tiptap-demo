@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  tiptap-demo:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"  # Web app
+      - "1236:1236"  # WebSocket server
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - WS_PORT=1236
+    volumes:
+      # Optional: persist any potential dynamic content
+      - ./data:/app/data
+    restart: unless-stopped
+
+  # Optional: Add Nginx as a reverse proxy if needed
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - tiptap-demo
+    restart: unless-stopped
