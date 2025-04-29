@@ -33,6 +33,21 @@ const debugLog = (message: string, data?: any) => {
 };
 
 /**
+ * Get a stored user ID or generate a new one if not available
+ */
+const getUserId = () => {
+  let userId = localStorage.getItem('user-id');
+  
+  if (!userId) {
+    // Generate a random ID if none exists
+    userId = 'user-' + Math.floor(Math.random() * 1000000).toString();
+    localStorage.setItem('user-id', userId);
+  }
+  
+  return userId;
+};
+
+/**
  * Function that returns a complete set of TipTap extensions
  * including collaboration features
  */
@@ -40,9 +55,9 @@ export const getCollaborativeExtensions = ({
   ydoc,
   provider,
   user = {
-    name: `User ${Math.floor(Math.random() * 100)}`,
-    color: '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0'),
-    id: `user-${Math.floor(Math.random() * 100000)}`
+    name: localStorage.getItem('user-name') || `User ${Math.floor(Math.random() * 100)}`,
+    color: localStorage.getItem('user-color') || '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0'),
+    id: getUserId()
   }
 }: CollaborativeExtensionsOptions) => {
   debugLog('Initializing collaborative extensions', { user });
@@ -50,6 +65,27 @@ export const getCollaborativeExtensions = ({
   // Get the shared type for the document
   const sharedType = ydoc.get('document', Y.XmlFragment);
   debugLog('Shared type initialized', { isEmpty: sharedType.length === 0 });
+
+  // Ensure we have valid user data
+  const safeUser = {
+    name: user.name || 'User',
+    color: user.color || '#2563EB',
+    id: user.id || getUserId()
+  };
+  
+  // Initialize user awareness with our user data if not already set
+  if (provider?.awareness && !provider.awareness.getLocalState()?.user) {
+    debugLog('Setting initial user awareness', { user: safeUser });
+    
+    // Get current state or initialize empty object
+    const currentState = provider.awareness.getLocalState() || {};
+    
+    // Set our user data in the awareness protocol
+    provider.awareness.setLocalState({
+      ...currentState,
+      user: safeUser
+    });
+  }
 
   return [
     // Core TipTap extensions with built-in history disabled
@@ -102,21 +138,20 @@ export const getCollaborativeExtensions = ({
     ...(provider ? [
       CollaborationCursor.configure({ 
         provider,
-        user: {
-          name: user.name,
-          color: user.color,
-          id: user.id
-        },
+        user: safeUser,
         render: (user) => {
+          const isLocalUser = user.id === safeUser.id;
           debugLog('Rendering cursor for user', { 
             name: user.name, 
             color: user.color,
-            id: user.id 
+            id: user.id,
+            isLocalUser
           });
           
           const cursor = document.createElement('span')
           cursor.classList.add('collaboration-cursor')
           cursor.setAttribute('style', `border-color: ${user.color}`)
+          cursor.setAttribute('data-user-id', user.id)
           
           const label = document.createElement('div')
           label.classList.add('collaboration-cursor-label')
@@ -130,32 +165,14 @@ export const getCollaborativeExtensions = ({
             pointer-events: none;
             white-space: nowrap;
           `)
-          label.textContent = user.name
+          
+          // Only show "You" for the current user's cursor
+          label.textContent = isLocalUser ? 'You' : user.name
           
           cursor.appendChild(label)
           
           return cursor
         },
-        // Ensure cursor updates maintain valid JSON state
-        onUpdate: (users) => {
-          if (!users) return null;
-          
-          try {
-            // Validate users is an array or object before logging
-            const validUsers = Array.isArray(users) ? users : [users];
-            debugLog('Cursor update', { 
-              users: validUsers.map(u => ({
-                name: u.name || null,
-                color: u.color || null,
-                id: u.id || null
-              }))
-            });
-          } catch (err) {
-            console.error('Error processing cursor update:', err);
-          }
-          
-          return null;
-        }
       })
     ] : []),
   ]

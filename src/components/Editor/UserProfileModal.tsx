@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCollaboration } from '../../context/CollaborationContext';
 import { X } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
 
 interface UserProfileModalProps {
   isOpen: boolean;
@@ -18,17 +19,32 @@ const colorOptions = [
   '#0E7490', // Cyan
 ];
 
+// Generate a persistent unique ID for this browser instance
+const getUserId = () => {
+  let userId = localStorage.getItem('user-id');
+  if (!userId) {
+    userId = `user-${uuidv4().substring(0, 8)}`;
+    localStorage.setItem('user-id', userId);
+  }
+  return userId;
+};
+
 // Default user state
 const defaultUser = {
-  id: 'local',
-  name: 'You',
-  color: colorOptions[0]
+  id: getUserId(),
+  name: 'User',
+  color: colorOptions[Math.floor(Math.random() * colorOptions.length)]
 };
 
 const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) => {
   const { provider } = useCollaboration();
-  const [userName, setUserName] = useState(defaultUser.name);
-  const [userColor, setUserColor] = useState(defaultUser.color);
+  const [userName, setUserName] = useState(() => {
+    return localStorage.getItem('user-name') || defaultUser.name;
+  });
+  
+  const [userColor, setUserColor] = useState(() => {
+    return localStorage.getItem('user-color') || defaultUser.color;
+  });
 
   // Update local state when awareness state changes
   useEffect(() => {
@@ -38,31 +54,46 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) 
     if (localState?.user) {
       setUserName(localState.user.name);
       setUserColor(localState.user.color);
+    } else {
+      // Initialize awareness with stored values
+      updateAwareness();
     }
   }, [provider?.awareness]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const updateAwareness = () => {
     if (!provider?.awareness) return;
-    
+
+    // Get the persistent user ID
+    const userId = getUserId();
+
     // Update awareness state
     const currentState = provider.awareness.getLocalState() || {};
-    const currentUser = currentState.user || {};
     
     provider.awareness.setLocalState({
       ...currentState,
       user: {
-        ...currentUser,
+        id: userId,
         name: userName,
         color: userColor,
       },
     });
 
+    console.log('Updated user awareness:', {
+      id: userId,
+      name: userName,
+      color: userColor,
+      clientId: provider.awareness.clientID
+    });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
     // Save to localStorage for persistence
     localStorage.setItem('user-name', userName);
     localStorage.setItem('user-color', userColor);
     
+    updateAwareness();
     onClose();
   };
 
