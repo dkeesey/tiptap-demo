@@ -1,21 +1,34 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode, useMemo } from 'react';
 import * as Y from 'yjs';
-import { WebsocketProvider } from 'y-websocket';
+import WebSocketService, { ConnectionStatus } from '../services/WebSocketService';
 
 // Type for our collaboration context
 interface CollaborationContextType {
-  provider: WebsocketProvider | null;
+  provider: any | null;
   ydoc: Y.Doc;
-  isConnected: boolean;
+  connectionStatus: ConnectionStatus;
   error: string | null;
+  currentUser: User;
+  connectedUsers: Map<string, User>;
+  forceSync: () => void;
+}
+
+// User interface
+export interface User {
+  id: string;
+  name: string;
+  color: string;
 }
 
 // Create context with default values
 const CollaborationContext = createContext<CollaborationContextType>({
   provider: null,
   ydoc: new Y.Doc(),
-  isConnected: false,
-  error: null
+  connectionStatus: 'disconnected',
+  error: null,
+  currentUser: { id: '', name: '', color: '' },
+  connectedUsers: new Map(),
+  forceSync: () => {}
 });
 
 interface CollaborationProviderProps {
@@ -34,17 +47,25 @@ const getUserId = () => {
   return userId;
 };
 
-// Function to force a document sync
-const forceSync = (provider: WebsocketProvider) => {
-  if (provider?.wsconnected) {
-    console.log('Forcing document sync...');
-    try {
-      // @ts-ignore - Internal API to force sync
-      provider.emit('sync', [provider.doc]);
-    } catch (err) {
-      console.error('Error forcing sync:', err);
-    }
+// Get or create user name
+const getUserName = () => {
+  let userName = localStorage.getItem('user-name');
+  if (!userName) {
+    userName = `User ${Math.floor(Math.random() * 9000 + 1000)}`;
+    localStorage.setItem('user-name', userName);
   }
+  return userName;
+};
+
+// Get or create user color
+const getUserColor = () => {
+  let userColor = localStorage.getItem('user-color');
+  if (!userColor) {
+    const hue = Math.floor(Math.random() * 360);
+    userColor = `hsl(${hue}, 70%, 50%)`;
+    localStorage.setItem('user-color', userColor);
+  }
+  return userColor;
 };
 
 // Function to detect if this is a test user from URL parameters
@@ -58,9 +79,10 @@ const isTestUser = () => {
 };
 
 export const CollaborationProvider: React.FC<CollaborationProviderProps> = ({ children, room }) => {
-  const [provider, setProvider] = useState<WebsocketProvider | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
+  const [provider, setProvider] = useState<any | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
   const [error, setError] = useState<string | null>(null);
+  const [connectedUsers, setConnectedUsers] = useState<Map<string, User>>(new Map());
   
   // Create a single Y.Doc instance that persists across all re-renders
   const ydoc = useMemo(() => {
@@ -68,155 +90,116 @@ export const CollaborationProvider: React.FC<CollaborationProviderProps> = ({ ch
     return new Y.Doc();
   }, []);  // No dependencies - create only once
 
-  // Use a hardcoded WebSocket URL for local development
-  // This matches the port used in SimpleWebSocketServer.cjs
-  const wsUrl = 'ws://localhost:1236';
+  // Create a single current user that persists
+  const currentUser = useMemo(() => {
+    // Try to get user details from URL params for test users
+    if (isTestUser() && typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      return {
+        id: url.searchParams.get('testUserId') || getUserId(),
+        name: url.searchParams.get('testUserName') || getUserName(),
+        color: url.searchParams.get('testUserColor') || getUserColor()
+      };
+    }
+    
+    return {
+      id: getUserId(),
+      name: getUserName(),
+      color: getUserColor()
+    };
+  }, []);
 
+  // Set up WebSocket provider
   useEffect(() => {
     console.log('Setting up WebSocket provider with room:', room);
     
     try {
-      // Create a new WebSocket provider for collaboration
-      console.log('Connecting to WebSocket server:', wsUrl, 'Room:', room);
-      
-      // Close any existing provider before creating a new one
-      if (provider) {
-        console.log('Disconnecting existing WebSocket provider');
-        provider.disconnect();
-        provider.destroy();
-      }
-      
-      // Initialize document if it's empty
-      const sharedXmlFragment = ydoc.getXmlFragment('document');
-      console.log('Document state:', {
-        fragmentLength: sharedXmlFragment.length,
-        isEmpty: sharedXmlFragment.length === 0,
+      // Get WebSocket service instance
+      const wsService = WebSocketService.getInstance({
+        primaryUrl: import.meta.env.VITE_WEBSOCKET_URL || 'ws://localhost:1236',
+        userData: currentUser
       });
-
-      // Generate a random client ID for this connection
-      const clientID = Math.floor(Math.random() * 100000000).toString();
       
-      // Create the WebSocket provider with explicit config
-      const wsProvider = new WebsocketProvider(wsUrl, room, ydoc, {
-        connect: true,
-        // Don't set awareness directly - it's not a proper config option
-        params: {
-          userId: getUserId(),
-          clientId: clientID // Pass as URL param
-        },
-        disableBc: true, // Disable broadcast channel to avoid issues
-      });
-
-      // Track connection status
-      wsProvider.on('status', ({ status }: { status: string }) => {
-        console.log('WebSocket status changed:', status);
-        if (status === 'connected') {
-          setIsConnected(true);
+      // Subscribe to connection status changes
+      const unsubscribe = wsService.onStatusChange((status) => {
+        setConnectionStatus(status);
+        
+        if (status === 'error') {
+          setError('WebSocket connection error. Using peer-to-peer fallback.');
+        } else if (status === 'connected') {
           setError(null);
-          
-          // Get current states after connection to see all users 
-          const states = Array.from(wsProvider.awareness.getStates().entries());
-          console.log('Connected with users:', states.map(([id, state]) => ({
-            clientID: id,
-            name: state.user?.name || 'Unknown',
-            userId: state.user?.id || 'no-id'
-          })));
-          
-          // Update awareness after a small delay to ensure it's processed
-          setTimeout(() => {
-            initializeUserAwareness(wsProvider);
-          }, 500);
-        } else if (status === 'disconnected') {
-          setIsConnected(false);
-          setError('WebSocket connection lost');
         }
       });
       
-      // Setup additional events for debugging
+      // Create the provider
+      const collabProvider = wsService.createCollaborationProvider(room, ydoc, currentUser);
+      setProvider(collabProvider);
       
-      // Track sync status
-      wsProvider.on('sync', (isSynced: boolean) => {
-        console.log('Document sync status:', isSynced ? 'synchronized' : 'synchronizing');
-        
-        // Update awareness once in sync
-        if (isSynced) {
-          console.log('Document synced, reinitializing awareness');
-          initializeUserAwareness(wsProvider);
+      // Set up awareness change handler to track connected users
+      const handleAwarenessChange = () => {
+        if (collabProvider && collabProvider.awareness) {
+          const newUsers = new Map<string, User>();
+          const states = collabProvider.awareness.getStates();
+          
+          // Extract user data from awareness states
+          states.forEach((state: any, clientId: number) => {
+            if (state.user) {
+              const user = state.user as User;
+              newUsers.set(user.id, user);
+            }
+          });
+          
+          setConnectedUsers(newUsers);
         }
-      });
-      
-      // Listen for document updates
-      ydoc.on('update', (update: Uint8Array, origin: any) => {
-        console.log('Document updated:', {
-          updateLength: update.length,
-          origin: origin === wsProvider ? 'remote' : 'local'
-        });
-      });
-
-      const initializeUserAwareness = (provider: WebsocketProvider) => {
-        // Set up the user data in awareness
-        const currentUserId = getUserId();
-        const userName = localStorage.getItem('user-name') || 'User';
-        const userColor = localStorage.getItem('user-color') || '#6B7280';
-        
-        // Add user number to display name if it's a test user
-        const displayName = isTestUser() ? userName : userName;
-        
-        console.log('Setting user awareness:', {
-          id: currentUserId,
-          name: displayName,
-          color: userColor,
-          clientId: provider.awareness.clientID
-        });
-        
-        // Clear existing state and set new state
-        provider.awareness.setLocalState({
-          user: {
-            id: currentUserId,
-            name: displayName,
-            color: userColor
-          }
-        });
       };
-
-      // Initialize user awareness immediately
-      initializeUserAwareness(wsProvider);
       
-      // Set a longer timeout for awareness states
-      if (wsProvider.awareness) {
-        // @ts-ignore - Type definition is incomplete, this is a valid property
-        wsProvider.awareness.cleanupTimeout = 30000; // 30 seconds
+      // Subscribe to awareness changes
+      if (collabProvider && collabProvider.awareness) {
+        collabProvider.awareness.on('change', handleAwarenessChange);
+        
+        // Initial update
+        handleAwarenessChange();
       }
       
-      // Force sync periodically to ensure document is up-to-date
-      const syncInterval = setInterval(() => {
-        if (wsProvider.wsconnected) {
-          forceSync(wsProvider);
-        }
-      }, 5000);
-
-      setProvider(wsProvider);
+      // Debug connection details periodically
+      const debugInterval = setInterval(() => {
+        wsService.logConnectionDetails();
+      }, 10000);
 
       // Clean up on unmount
       return () => {
         console.log('Cleaning up WebSocket provider');
-        clearInterval(syncInterval);
-        wsProvider.disconnect();
-        wsProvider.destroy();
+        unsubscribe();
+        clearInterval(debugInterval);
+        
+        if (collabProvider && collabProvider.awareness) {
+          collabProvider.awareness.off('change', handleAwarenessChange);
+        }
+        
+        wsService.destroy();
       };
     } catch (err) {
       console.error('WebSocket connection error:', err);
       setError(err instanceof Error ? err.message : 'Connection failed');
       return () => {}; // Empty cleanup for error case
     }
-  }, [room]); // Only recreate when room changes
+  }, [room, ydoc, currentUser]); // Only recreate when room changes
+
+  // Force sync function
+  const forceSync = () => {
+    const wsService = WebSocketService.getInstance();
+    wsService.forceSync();
+  };
 
   const contextValue = useMemo(() => ({
     provider,
     ydoc,
-    isConnected,
-    error
-  }), [provider, ydoc, isConnected, error]);
+    connectionStatus,
+    error,
+    currentUser,
+    connectedUsers,
+    forceSync
+  }), [provider, ydoc, connectionStatus, error, currentUser, connectedUsers]);
 
   return (
     <CollaborationContext.Provider value={contextValue}>
