@@ -1,163 +1,42 @@
 {
   "tasks": [
     {
-      "id": "bubble-menu-fixes",
-      "title": "Fix bubble menu issues",
-      "description": "Address issues with the bubble menu, including unexpected appearance on initial click and improving selection detection.",
-      "category": "debugging",
+      "id": "docker-deployment-setup",
+      "title": "Configure Docker Deployment for TipTap Demo",
+      "description": "Set up containerized deployment with Docker and Docker Compose",
+      "category": "deployment",
       "status": "in-progress",
-      "priority": "high",
-      "due": "2025-04-27",
-      "subtasks": [
+      "priority": "critical",
+      "due": "2025-04-28",
+      "deployment_components": [
         {
-          "id": "selection-detection",
-          "title": "Improve selection detection logic",
-          "status": "in-progress"
+          "name": "Dockerfile",
+          "status": "completed",
+          "description": "Multi-stage build for optimized Docker image"
         },
         {
-          "id": "menu-visibility",
-          "title": "Refine shouldShow method implementation",
-          "status": "in-progress"
+          "name": "Docker Compose",
+          "status": "completed", 
+          "description": "Configuration for multi-container deployment"
         },
         {
-          "id": "edge-cases",
-          "title": "Test edge cases in selection and formatting",
-          "status": "todo"
-        },
-        {
-          "id": "behavior-documentation",
-          "title": "Document bubble menu behavior patterns",
-          "status": "todo"
+          "name": "Nginx Proxy",
+          "status": "optional",
+          "description": "Reverse proxy configuration for production"
         }
-      ]
-    },
-    {
-      "id": "websocket-issues",
-      "title": "Fix WebSocket connectivity issues",
-      "description": "Resolve issues with WebSocket connections for collaborative editing, including connection states and error handling.",
-      "category": "debugging",
-      "status": "in-progress",
-      "priority": "high",
-      "due": "2025-04-27",
-      "subtasks": [
-        {
-          "id": "port-conflict",
-          "title": "Resolve port conflict issues",
-          "status": "in-progress"
-        },
-        {
-          "id": "connection-state",
-          "title": "Improve connection state handling",
-          "status": "todo"
-        },
-        {
-          "id": "error-handling",
-          "title": "Enhance error handling for connections",
-          "status": "todo"
-        },
-        {
-          "id": "reconnection-logic",
-          "title": "Implement better reconnection logic",
-          "status": "todo"
+      ],
+      "deployment_strategy": {
+        "containerization": "Docker",
+        "server_count": 2,
+        "ports": {
+          "web": 3000,
+          "websocket": 1236
         }
-      ]
-    },
-    {
-      "id": "logging-reduction",
-      "title": "Implement comprehensive logging system",
-      "description": "Create a debugging system to manage console logging and reduce excessive messages. Add debug channels and a UI for toggling logging.",
-      "category": "debugging",
-      "status": "in-progress",
-      "priority": "medium",
-      "due": "2025-04-27",
-      "subtasks": [
-        {
-          "id": "debug-logger",
-          "title": "Create debug logger utility",
-          "status": "in-progress"
-        },
-        {
-          "id": "debug-channels",
-          "title": "Implement debug channels for organization",
-          "status": "in-progress"
-        },
-        {
-          "id": "debug-ui",
-          "title": "Build debug panel UI",
-          "status": "in-progress"
-        },
-        {
-          "id": "console-filtering",
-          "title": "Add browser-level console filtering",
-          "status": "todo"
-        }
-      ]
-    },
-    {
-      "id": "extension-conflicts",
-      "title": "Resolve TipTap extension conflicts",
-      "description": "Fix any conflicts between TipTap extensions, especially with custom nodes and the collaboration extension.",
-      "category": "debugging",
-      "status": "in-progress",
-      "priority": "medium",
-      "due": "2025-04-27",
-      "subtasks": [
-        {
-          "id": "circular-deps",
-          "title": "Fix circular dependencies",
-          "status": "todo"
-        },
-        {
-          "id": "extension-order",
-          "title": "Resolve extension loading order issues",
-          "status": "todo"
-        },
-        {
-          "id": "custom-node-compat",
-          "title": "Ensure custom node compatibility",
-          "status": "todo"
-        },
-        {
-          "id": "collaboration-integration",
-          "title": "Test collaboration with all extensions",
-          "status": "todo"
-        },
-        {
-          "id": "yjs-logging-fix",
-          "title": "Fix yjs logging API compatibility issue",
-          "status": "done"
-        }
-      ]
-    },
-    {
-      "id": "performance-optimization",
-      "title": "Optimize editor performance",
-      "description": "Identify and address performance bottlenecks, especially with real-time collaboration and AI features enabled.",
-      "category": "debugging",
-      "status": "todo",
-      "priority": "low",
-      "due": "2025-04-27",
-      "subtasks": [
-        {
-          "id": "render-performance",
-          "title": "Optimize rendering performance",
-          "status": "todo"
-        },
-        {
-          "id": "collab-perf",
-          "title": "Improve collaboration sync performance",
-          "status": "todo"
-        },
-        {
-          "id": "memory-usage",
-          "title": "Reduce memory usage",
-          "status": "todo"
-        },
-        {
-          "id": "profiling",
-          "title": "Profile and identify bottlenecks",
-          "status": "todo"
-        }
+      },
+      "next_steps": [
+        "Test Docker build",
+        "Verify container communication",
+        "Configure environment-specific settings"
       ]
     }
   ]

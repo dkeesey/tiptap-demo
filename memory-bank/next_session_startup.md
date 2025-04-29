@@ -1,45 +1,78 @@
-# TipTap Demo Next Session Startup
+# Next Session Deployment Focus for TipTap Collaborative Editor
 
-## Current Context
-We are working on refining the TipTap editor's UI and interaction mechanisms, specifically focusing on:
-- Bubble menu behavior
-- Micro-interactions
-- Responsive design improvements
+## Current Project State
+- Simplified WebSocket collaboration implementation
+- Minimal deployment configuration
+- Using public WebSocket service as fallback
 
-## Specific Focus Areas
-1. Complete bubble menu visibility debugging
-2. Implement comprehensive logging for editor interactions
-3. Enhance micro-interaction utilities
-4. Review and optimize TipTap extension configurations
+## Deployment Objectives
+1. **Validate Vercel Deployment**
+   - Confirm successful build and hosting
+   - Verify WebSocket connection works
+   - Test basic collaborative editing functionality
 
-## Immediate Action Items
-- Review console logs from bubble menu debugging
-- Finalize `shouldShow` method implementation
-- Test edge cases in selection and formatting
-- Document observed behavior patterns
+2. **WebSocket Connection Strategies**
+   - Validate fallback connection mechanism
+   - Implement more robust error handling
+   - Create user-friendly connection status indicators
 
-## Technical Stack
-- TipTap Editor
-- React
-- Tailwind CSS
-- Y.js for collaboration
-- Claude 3.5 Sonnet for AI-assisted development
+3. **Environment Configuration**
+   - Set up environment variables for WebSocket URL
+   - Create development vs. production configurations
+   - Ensure seamless switching between connection modes
 
-## Startup Command Sequence
-1. Restart WebSocket server
-2. Start development server
-3. Open browser with developer tools
-4. Verify console logging functionality
-5. Test editor interactions systematically
+## Specific Tasks
+- [ ] Deploy to Vercel with GitHub repository
+- [ ] Configure WebSocket URL environment variable
+- [ ] Test collaborative editing across different browsers
+- [ ] Implement comprehensive connection status UI
+- [ ] Create fallback mechanism for WebSocket connection failure
 
-## Collaboration Notes
-- Using Claude 3.5 Sonnet model
-- Continued focus on incremental, testable improvements
-- Maintain detailed documentation of changes and learnings
+## Potential Challenges to Address
+- Cross-browser compatibility
+- Handling intermittent network connections
+- Providing clear user feedback during connection issues
 
-## Questions to Investigate
-- Are there any remaining unexpected behaviors in the bubble menu?
-- How can we make the selection detection more robust?
-- What additional context can we add to improve logging?
+## Recommended Approach
+1. Minimal Viable Product (MVP) Deployment
+2. Iterative Testing and Improvement
+3. Focus on User Experience
+4. Robust Error Handling
 
-Let's continue our systematic approach to refining the TipTap editor's user experience.
+## Key Questions to Investigate
+- How reliable is the public WebSocket service?
+- What are the performance characteristics of the current implementation?
+- How can we improve user experience during connection issues?
+
+PROMPT FOR CLAUDE HAIKU:
+Objective: Shepherd the TipTap Collaborative Editor to a working Vercel deployment.
+
+Context:
+- Project is a real-time collaborative editor using TipTap and Y.js
+- Currently using a public WebSocket service (y-webrtc-signal-backend.fly.dev)
+- Need to validate and improve deployment process
+
+Immediate Actions:
+1. Verify project builds successfully
+2. Create GitHub repository if not existing
+3. Connect repository to Vercel
+4. Configure WebSocket URL environment variable
+5. Test collaborative editing functionality
+6. Implement comprehensive error handling and connection status UI
+
+Focus Areas:
+- Deployment simplicity
+- Fallback connection mechanisms
+- User experience during connection state changes
+
+Constraints:
+- Minimize complexity
+- Use existing public WebSocket service
+- Ensure cross-browser compatibility
+
+Reporting:
+- Provide detailed steps taken
+- Document any challenges encountered
+- Suggest improvements for future iterations
+
+Begin by reviewing the current project configuration and preparing for deployment.
