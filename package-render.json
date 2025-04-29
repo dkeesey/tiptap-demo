@@ -1,0 +1,17 @@
+{
+  "name": "tiptap-websocket-server",
+  "version": "1.0.0",
+  "main": "FixedWebSocketServer.cjs",
+  "scripts": {
+    "start": "node FixedWebSocketServer.cjs"
+  },
+  "dependencies": {
+    "ws": "^8.16.0",
+    "yjs": "^13.6.8",
+    "y-protocols": "^1.0.5",
+    "lib0": "^0.2.77"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
