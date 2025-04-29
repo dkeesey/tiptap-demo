@@ -68,7 +68,13 @@ class WebSocketService {
   private constructor(config?: WebSocketConfig) {
     // Merge provided config with environment variables and defaults
     this.config = {
-      primaryUrl: import.meta.env.VITE_WEBSOCKET_PRIMARY_URL || 'ws://localhost:1236',
+      primaryUrl: 
+        // First try environment variables (production deployment)
+        import.meta.env.VITE_WEBSOCKET_PRIMARY_URL || 
+        // Then detect if we're in a secure context (https)
+        (window.location.protocol === 'https:' 
+          ? 'wss://tiptap-demo-production.up.railway.app' 
+          : 'ws://localhost:1236'),
       fallbackUrl: import.meta.env.VITE_WEBSOCKET_FALLBACK_URL || 'wss://y-webrtc-signal-backend.fly.dev',
       useWebRTCFallback: import.meta.env.VITE_USE_WEBRTC_FALLBACK === 'true' || true,
       connectTimeout: Number(import.meta.env.VITE_WEBSOCKET_CONNECT_TIMEOUT) || 10000,
@@ -76,6 +82,11 @@ class WebSocketService {
       reconnectInterval: Number(import.meta.env.VITE_WEBSOCKET_RECONNECT_INTERVAL) || 2000,
       ...config
     };
+    
+    // Debug connection info in development
+    if (import.meta.env.DEV) {
+      console.log('WebSocketService initialized with config:', this.config);
+    }
 
     // Listen for online/offline events
     if (typeof window !== 'undefined') {
@@ -540,6 +551,50 @@ class WebSocketService {
     }
     
     console.groupEnd();
+  }
+  
+  /**
+   * Debug mode for connection issues
+   */
+  public enableDebugMode() {
+    console.log('WebSocket Debug Mode Enabled');
+    
+    // Log all config
+    console.log('WebSocket Config:', this.config);
+    
+    // Log environment variables
+    console.log('Environment Variables:');
+    Object.keys(import.meta.env).forEach(key => {
+      if (key.startsWith('VITE_WEBSOCKET')) {
+        console.log(`- ${key}: ${import.meta.env[key]}`);
+      }
+    });
+    
+    // Add detailed connection logging
+    if (this.provider) {
+      if (isWebsocketProvider(this.provider)) {
+        console.log('Setting up WebSocket debug hooks');
+        
+        // @ts-ignore - Access internal socket
+        const socket = this.provider._ws;
+        
+        if (socket) {
+          const originalSend = socket.send;
+          socket.send = function(data) {
+            console.log('WS → Sending data', data.byteLength || data.length);
+            return originalSend.apply(this, arguments);
+          };
+          
+          const originalOnMessage = socket.onmessage;
+          socket.onmessage = function(event) {
+            console.log('WS ← Received data', event.data.byteLength || event.data.length);
+            return originalOnMessage.apply(this, arguments);
+          };
+        }
+      }
+    }
+    
+    return this;
   }
 }
 
