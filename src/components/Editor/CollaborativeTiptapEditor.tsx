@@ -10,6 +10,7 @@ import { useCollaboration } from '../../context/CollaborationContext'
 import { getYjsValue } from '@syncedstore/core'
 import AiPromptNode from '../../extensions/AiPromptNode'
 import { ConnectionDebugger } from '../Debug'
+import { v4 as uuidv4 } from 'uuid'
 
 // CSS for collaboration cursors
 import '../../styles/collaboration.css'
@@ -29,6 +30,46 @@ interface CollaborativeTiptapEditorProps {
   aiEnabled?: boolean
 }
 
+// Generate a random color for test users
+const getRandomColor = () => {
+  const colors = [
+    '#2563EB', // Blue
+    '#16A34A', // Green
+    '#DC2626', // Red
+    '#D97706', // Amber
+    '#7C3AED', // Purple
+    '#DB2777', // Pink
+    '#4B5563', // Gray
+    '#0E7490', // Cyan
+  ];
+  return colors[Math.floor(Math.random() * colors.length)];
+};
+
+// Function to open a new test user window
+const openTestUserWindow = () => {
+  // Generate a unique test user ID and name
+  const uniqueId = uuidv4().substring(0, 8);
+  const testUserId = `test-user-${uniqueId}`;
+  const testUserNumber = Math.floor(Math.random() * 100);
+  const testUserName = `Test User ${testUserNumber}`;
+  const testUserColor = getRandomColor();
+  
+  // Create URL with query parameters for the test user
+  const url = new URL(window.location.href);
+  url.searchParams.set('testUserId', testUserId);
+  url.searchParams.set('testUserName', testUserName);
+  url.searchParams.set('testUserColor', testUserColor);
+  
+  console.log('Creating test user:', {
+    id: testUserId,
+    name: testUserName,
+    color: testUserColor
+  });
+  
+  // Open a new window with the test user parameters
+  window.open(url.toString(), '_blank', 'width=1024,height=768');
+};
+
 const CollaborativeTiptapEditor = ({ onChange, aiEnabled = true }: CollaborativeTiptapEditorProps) => {
   console.log('[Editor Component] Rendering CollaborativeTiptapEditor...');
   const { ydoc, provider, isConnected, error } = useCollaboration()
@@ -41,8 +82,54 @@ const CollaborativeTiptapEditor = ({ onChange, aiEnabled = true }: Collaborative
   const [showAiMenu, setShowAiMenu] = useState<boolean>(false)
   const [menuPosition, setMenuPosition] = useState<{x: number, y: number}>({x: 0, y: 0})
 
+  // Check for test user parameters in URL on load
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const testUserId = url.searchParams.get('testUserId');
+    const testUserName = url.searchParams.get('testUserName');
+    const testUserColor = url.searchParams.get('testUserColor');
+    
+    // If this is a test user, set the user data in localStorage
+    if (testUserId && testUserName && testUserColor) {
+      console.log('Setting up test user:', { testUserId, testUserName, testUserColor });
+      localStorage.setItem('user-id', testUserId);
+      localStorage.setItem('user-name', testUserName);
+      localStorage.setItem('user-color', testUserColor);
+      
+      // Remove parameters from URL to avoid confusion
+      url.searchParams.delete('testUserId');
+      url.searchParams.delete('testUserName');
+      url.searchParams.delete('testUserColor');
+      window.history.replaceState({}, document.title, url.toString());
+    }
+  }, []);
+
   // Get XML fragment for the document
   const fragment = ydoc.getXmlFragment('document')
+
+  // Add debug logging for document content
+  useEffect(() => {
+    const observer = () => {
+      console.log('[Editor Y.Doc] Document fragment updated:', {
+        fragmentLength: fragment.length,
+        isEmpty: fragment.length === 0,
+        timestamp: new Date().toISOString(),
+      });
+    };
+    
+    fragment.observeDeep(observer);
+    
+    // Log current state immediately
+    console.log('[Editor Y.Doc] Initial document state:', {
+      fragmentLength: fragment.length, 
+      isEmpty: fragment.length === 0,
+      timestamp: new Date().toISOString(),
+    });
+    
+    return () => {
+      fragment.unobserveDeep(observer);
+    };
+  }, [fragment]);
 
   // Determine if collaboration is active
   // Even when disconnected, we'll continue using the collaborative extensions
@@ -199,7 +286,18 @@ const CollaborativeTiptapEditor = ({ onChange, aiEnabled = true }: Collaborative
 
   return (
     <div className="tiptap-editor" ref={editorRef}>
-      <EditorToolbar editor={editor} />
+      <div className="flex justify-between items-center mb-2">
+        <EditorToolbar editor={editor} />
+        
+        {/* Test User Button */}
+        <button
+          onClick={openTestUserWindow}
+          className="ml-2 px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+          title="Opens a new browser window with a test user"
+        >
+          Create Test User
+        </button>
+      </div>
       
       {/* Connection status indicator */}
       <div className={`connection-status px-4 py-1 text-xs ${
