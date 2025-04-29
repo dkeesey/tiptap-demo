@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: tiptap-websocket-server
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install
+    startCommand: node FixedWebSocketServer.cjs
+    envVars:
+      - key: WS_PORT
+        value: 10000
+      - key: LOG_LEVEL
+        value: 2
+      - key: NODE_ENV
+        value: production
+    healthCheckPath: /
+    autoDeploy: false
+    runtime: nodejs18.x
