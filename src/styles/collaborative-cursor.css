@@ -1,0 +1,160 @@
+/* Collaborative cursor styling */
+.collaboration-cursor {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.collaboration-cursor-caret {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2px;
+  height: 20px;
+  border-radius: 4px;
+  background-color: inherit;
+  transform: translateX(-50%);
+}
+
+.collaboration-cursor-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 3px 5px;
+  border-radius: 4px;
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  transform: translateY(-100%) translateX(-50%);
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.collaboration-cursor-label.hiding {
+  opacity: 0;
+}
+
+.collaboration-cursor-selection {
+  background-color: rgba(155, 214, 255, 0.17);
+  pointer-events: none;
+}
+
+/* Connection status indicator */
+.connection-status {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+  padding: 4px 8px;
+  font-size: 14px;
+}
+
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-indicator:before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+
+.status-indicator.online {
+  background-color: rgba(52, 211, 153, 0.1);
+  color: rgb(16, 185, 129);
+}
+
+.status-indicator.online:before {
+  background-color: rgb(16, 185, 129);
+}
+
+.status-indicator.connecting,
+.status-indicator.reconnecting {
+  background-color: rgba(251, 191, 36, 0.1);
+  color: rgb(245, 158, 11);
+}
+
+.status-indicator.connecting:before,
+.status-indicator.reconnecting:before {
+  background-color: rgb(245, 158, 11);
+  animation: pulse 1.5s infinite;
+}
+
+.status-indicator.offline {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: rgb(239, 68, 68);
+}
+
+.status-indicator.offline:before {
+  background-color: rgb(239, 68, 68);
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.3;
+  }
+}
+
+/* Collaborator list styling */
+.collaborators-list {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 12px;
+  z-index: 1000;
+}
+
+.collaborators-list-header {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #374151;
+}
+
+.collaborators-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.collaborator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.collaborator-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: white;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.collaborator-name {
+  font-size: 12px;
+  color: #4b5563;
+}
