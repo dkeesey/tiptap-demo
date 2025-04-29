@@ -1,24 +1,39 @@
 {
   "version": 2,
+  "github": {
+    "enabled": false
+  },
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
   "outputDirectory": "dist",
   "framework": "vite",
   "env": {
-    "VITE_WEBSOCKET_URL": "@websocket_url"
+    "VITE_WEBSOCKET_URL": "wss://tiptap-demo-production.up.railway.app"
   },
-  "routes": [
+  "rewrites": [
     {
-      "src": "/websocket/(.*)",
-      "headers": {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
-        "Access-Control-Allow-Headers": "X-Requested-With, Content-Type, Authorization"
-      },
-      "dest": "/websocket"
+      "source": "/websocket/(.*)", 
+      "destination": "/websocket"
     }
   ],
   "headers": [
+    {
+      "source": "/websocket/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET,POST,PUT,DELETE,OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "X-Requested-With, Content-Type, Authorization"
+        }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [

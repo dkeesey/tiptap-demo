@@ -1,6 +1,9 @@
 {
   "name": "tiptap-demo",
   "version": "1.0.0",
+  "engines": {
+    "node": "18.x"
+  },
   "description": "TipTap Collaborative Editor",
   "main": "src/index.tsx",
   "scripts": {
