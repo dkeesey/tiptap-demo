@@ -105,14 +105,14 @@ export const SlashCommandExtension = Extension.create({
         render: () => {
           let reactRenderer: ReactRenderer;
           let popup: any;
-  
+
           return {
             onStart: (props) => {
               reactRenderer = new ReactRenderer(SlashCommandsList, {
                 props,
                 editor: props.editor,
               });
-              
+
               // Store the popup reference globally for easier access
               popup = tippy(document.body, {
                 getReferenceClientRect: props.clientRect,
@@ -134,7 +134,7 @@ export const SlashCommandExtension = Extension.create({
             
             onUpdate(props) {
               reactRenderer.updateProps(props);
-              
+
               popup[0].setProps({
                 getReferenceClientRect: props.clientRect,
               });

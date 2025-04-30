@@ -148,23 +148,23 @@ const UserPresence: React.FC = () => {
           <div className="flex items-center">
             <div className="text-xs text-gray-500 mr-2">
               {otherUsers.length} {otherUsers.length === 1 ? 'user' : 'users'} connected
-            </div>
-            <div className="flex -space-x-2 overflow-hidden">
+          </div>
+          <div className="flex -space-x-2 overflow-hidden">
               {otherUsers.map((user) => (
-                <div
+              <div
                   key={user.uniqueKey}
                   className="user-avatar w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                  style={{ backgroundColor: user.color }}
-                  title={user.name}
-                >
-                  {user.avatar ? (
-                    <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full" />
-                  ) : (
-                    getInitials(user.name)
-                  )}
-                </div>
-              ))}
-            </div>
+                style={{ backgroundColor: user.color }}
+                title={user.name}
+              >
+                {user.avatar ? (
+                  <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full" />
+                ) : (
+                  getInitials(user.name)
+                )}
+              </div>
+            ))}
+          </div>
           </div>
         ) : (
           <div className="text-xs text-gray-500">No other users connected</div>

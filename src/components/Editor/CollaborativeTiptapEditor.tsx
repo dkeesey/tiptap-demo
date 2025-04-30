@@ -272,11 +272,11 @@ const CollaborativeTiptapEditor = ({ onChange, aiEnabled = true }: Collaborative
   // Update status message based on connection status
   useEffect(() => {
     if (isConnected) {
-      setStatusMessage('Connected')
+        setStatusMessage('Connected')
     } else if (error) {
       setStatusMessage('Offline - Your changes are saved and will sync when reconnected')
     } else {
-      setStatusMessage('Connecting to collaboration server...')
+        setStatusMessage('Connecting to collaboration server...')
     }
   }, [isConnected, error])
 
@@ -287,7 +287,7 @@ const CollaborativeTiptapEditor = ({ onChange, aiEnabled = true }: Collaborative
   return (
     <div className="tiptap-editor" ref={editorRef}>
       <div className="flex justify-between items-center mb-2">
-        <EditorToolbar editor={editor} />
+      <EditorToolbar editor={editor} />
         
         {/* Test User Button */}
         <button
