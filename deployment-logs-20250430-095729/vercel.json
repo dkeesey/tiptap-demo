@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "dist/**", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "/dist/" }
+  ],
+  "env": {
+    "VITE_WEBSOCKET_URL": "wss://websocket-server-production-b045.up.railway.app",
+    "VITE_WEBSOCKET_PRIMARY_URL": "wss://websocket-server-production-b045.up.railway.app",
+    "VITE_APP_TITLE": "TipTap Collaborative Editor",
+    "ENABLE_COLLABORATION": "true"
+  }
+}
