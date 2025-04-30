@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { UserIcon } from 'lucide-react'
-import { useCollaboration } from '../../context/CollaborationContext'
+import { useRailwayCollaboration } from '../../context/RailwayCollaborationContext'
 import UserProfileModal from './UserProfileModal'
 
 // Helper to get initials from name
@@ -27,7 +27,8 @@ const defaultUser = {
 }
 
 const UserPresence: React.FC = () => {
-  const { provider, isConnected } = useCollaboration()
+  const { provider, connectionStatus } = useRailwayCollaboration()
+  const isConnected = connectionStatus === 'connected'
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
   const [otherUsers, setOtherUsers] = useState<any[]>([])
   

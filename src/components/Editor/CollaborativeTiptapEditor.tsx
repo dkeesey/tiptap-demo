@@ -6,7 +6,7 @@ import EditorBubbleMenu from '../Menus/EditorBubbleMenu'
 import EditorFloatingMenu from '../Menus/EditorFloatingMenu'
 import AISidebar from '../AI/AISidebar'
 import AIActionsMenu from '../AI/AIActionsMenu'
-import { useCollaboration } from '../../context/CollaborationContext'
+import { useRailwayCollaboration } from '../../context/RailwayCollaborationContext'
 import { getYjsValue } from '@syncedstore/core'
 import AiPromptNode from '../../extensions/AiPromptNode'
 import { ConnectionDebugger } from '../Debug'
@@ -72,7 +72,8 @@ const openTestUserWindow = () => {
 
 const CollaborativeTiptapEditor = ({ onChange, aiEnabled = true }: CollaborativeTiptapEditorProps) => {
   console.log('[Editor Component] Rendering CollaborativeTiptapEditor...');
-  const { ydoc, provider, isConnected, error } = useCollaboration()
+  const { ydoc, provider, connectionStatus, error } = useRailwayCollaboration()
+  const isConnected = connectionStatus === 'connected'
   const [statusMessage, setStatusMessage] = useState<string>('')
   const [isReady, setIsReady] = useState(false)
   const editorRef = useRef(null)
