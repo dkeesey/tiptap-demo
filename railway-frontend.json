@@ -18,7 +18,7 @@
     }
   },
   "deploy": {
-    "startCommand": "npm run start:production",
+    "startCommand": "node server.js",
     "healthcheckPath": "/",
     "healthcheckTimeout": 100,
     "restartPolicyType": "ALWAYS"
@@ -27,7 +27,8 @@
     "NODE_ENV": "production",
     "VITE_APP_TITLE": "TipTap Collaborative Editor",
     "ENABLE_COLLABORATION": "true",
-    "ENABLE_WEBSOCKET_FALLBACK": "true"
+    "ENABLE_WEBSOCKET_FALLBACK": "true",
+    "VITE_WEBSOCKET_URL": "wss://websocket-server-production-b045.up.railway.app"
   },
   "settings": {
     "node": {
