@@ -85,13 +85,13 @@ const getYDoc = (docName, conn) => {
     
     // Handle awareness updates
     awarenessState.on('update', ({ added, updated, removed }, origin) => {
-      const encoder = encoding.createEncoder();
-      encoding.writeVarUint(encoder, messageAwareness);
+        const encoder = encoding.createEncoder();
+        encoding.writeVarUint(encoder, messageAwareness);
       encoding.writeVarUint8Array(encoder, 
         awarenessProtocol.encodeAwarenessUpdate(awarenessState, added.concat(updated).concat(removed))
       );
-      const message = encoding.toUint8Array(encoder);
-      
+        const message = encoding.toUint8Array(encoder);
+        
       const room = rooms.get(docName);
       if (room) {
         room.forEach((client) => {
@@ -188,9 +188,9 @@ wss.on('connection', (conn, req) => {
     log(`Assigned client ID ${clientId} for room ${docName}`);
 
     // Send initial sync
-    const encoder = encoding.createEncoder();
-    encoding.writeVarUint(encoder, messageSync);
-    syncProtocol.writeSyncStep1(encoder, doc);
+      const encoder = encoding.createEncoder();
+      encoding.writeVarUint(encoder, messageSync);
+      syncProtocol.writeSyncStep1(encoder, doc);
     send(conn, encoding.toUint8Array(encoder));
 
     // Send current awareness state
@@ -217,8 +217,8 @@ wss.on('connection', (conn, req) => {
               case 0: { // step 1
                 const encoder = encoding.createEncoder();
                 encoding.writeVarUint(encoder, messageSync);
-                syncProtocol.writeSyncStep2(encoder, doc);
-                send(conn, encoding.toUint8Array(encoder));
+              syncProtocol.writeSyncStep2(encoder, doc);
+              send(conn, encoding.toUint8Array(encoder));
                 break;
               }
               case 1: { // step 2
@@ -234,10 +234,10 @@ wss.on('connection', (conn, req) => {
                 Y.applyUpdate(doc, update);
                 broadcastDocumentUpdate(docName, conn, update);
                 break;
-              }
+                  }
             }
             break;
-          }
+              }
           case messageAwareness: {
             const awarenessUpdate = decoding.readVarUint8Array(decoder);
             awarenessProtocol.applyAwarenessUpdate(awarenessState, awarenessUpdate, conn);
@@ -268,7 +268,7 @@ wss.on('connection', (conn, req) => {
     logError('Error handling connection', err);
     clearInterval(pingInterval);
     cleanupClientConnection(conn);
-  }
+              }
 });
 
 // Handle server errors

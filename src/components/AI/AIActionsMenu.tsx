@@ -147,7 +147,7 @@ const AIActionsMenu: React.FC<AIActionsMenuProps> = ({
       <div className="flex items-center justify-center p-2 border-b border-gray-200 dark:border-gray-700">
         <Sparkles className="h-4 w-4 text-purple-500 mr-1" />
         <span className="text-sm font-medium">AI Actions</span>
-      </div>
+        </div>
       
       <div className="grid grid-cols-2 gap-1 p-1">
         {AI_ACTIONS.map((action) => (

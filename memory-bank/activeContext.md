@@ -1,13 +1,21 @@
 # TipTap Demo - Active Context
 
 ## Current Focus
-As of April 25, 2025, the active focus is on:
-1. Implementing enhanced AI features that feel native to the editing experience
-2. Testing collaborative features across multiple devices
-3. Polishing the UI for production-ready appearance
-4. Finalizing the Notion-like slash command interface with AI capabilities
+As of April 29, 2025, the active focus is on:
+1. **Deployment Optimization**: Consolidating deployment on Railway and fixing WebSocket connection issues
+2. **Testing Collaborative Features**: Ensuring real-time collaboration works reliably in production
+3. **Documentation Completion**: Finalizing portfolio documentation and deployment guides
+4. **Production Readiness**: Optimizing performance and reliability for real-world use
 
 ## Recent Changes
+- Improved WebSocketService.ts with better connection handling (April 29, 2025)
+- Created ConnectionStatus component for connection visualization (April 29, 2025)
+- Updated App.tsx to use dynamic WebSocket URL resolution (April 29, 2025)
+- Added health endpoint to EnhancedWebSocketServer.cjs (April 29, 2025)
+- Created Railway configuration files for consolidated deployment (April 29, 2025)
+- Implemented deployment scripts for coordinated updates (April 29, 2025)
+- Created validation and log collection utilities (April 29, 2025)
+- Added comprehensive deployment documentation (April 29, 2025)
 - Enhanced micro-interactions utility with additional animations and effects (April 27, 2025)
 - Implemented browser-level console filtering (April 27, 2025)
 - Fixed bubble menu persistence issue (April 27, 2025)
@@ -46,11 +54,11 @@ As of April 25, 2025, the active focus is on:
 - Created detailed AI features documentation (April 25, 2025)
 
 ## Current Priorities
-1. **P0**: Test AI features across the editor
-2. **P0**: Test collaborative features across multiple devices
-3. **P0**: Polish UI for production-ready appearance 
-4. **P1**: Document AI features usage
-5. **P2**: Prepare slide deck for presentation to recruiter
+1. **P0**: Complete consolidated Railway deployment of both frontend and WebSocket server
+2. **P0**: Test collaborative features in production environment
+3. **P0**: Finalize portfolio documentation with deployment architecture 
+4. **P1**: Implement comprehensive monitoring for WebSocket connections
+5. **P2**: Enhance offline fallback capabilities
 
 ## In-Progress Tasks
 - Testing collaborative editing features
@@ -64,15 +72,27 @@ As of April 25, 2025, the active focus is on:
 - Rehearse demo for Monday meeting with recruiter
 
 ## Blockers and Challenges
-- ~~WebSocket connectivity issues~~ (Resolved April 27, 2025)
+- ~~WebSocket connectivity issues~~ (Resolved April 29, 2025)
+- ~~Environment variable propagation~~ (Resolved April 29, 2025)
 - None at this time
 
 ## Current Questions
-- What additional AI features could be valuable in a real production environment?
-- How can we enhance the offline experience for collaborative editing?
-- What's the best approach for handling real AI service API keys in a production environment?
+- Would a fully consolidated Railway deployment be more maintainable than the hybrid Vercel/Railway approach?
+- What additional monitoring metrics would be valuable for tracking WebSocket performance?
+- What CI/CD workflow would be most effective for synchronized deployment of both services?
+- How can we further optimize the reconnection experience for intermittent network conditions?
 
 ## Recent Learnings
+- Railway provides an effective platform for both frontend and WebSocket server deployment
+- WebSocket connections require secure protocol (wss://) when used with HTTPS frontends
+- Environment variables must be carefully managed across deployment platforms
+- Health endpoints are essential for monitoring WebSocket server status
+- Proper CORS configuration is critical for cross-origin WebSocket connections
+- Dynamic WebSocket URL resolution improves deployment flexibility
+- Coordinated deployment scripts ensure synchronization between services
+- Visual connection status indicators greatly improve debugging and user experience
+- Detailed logging helps identify and resolve WebSocket connection issues
+- Y.js providers need additional error handling for production reliability
 - TipTap's extension system is powerful and modular
 - Y.js provides robust real-time collaboration capabilities
 - TipTap's collaborative cursor extension works well with Y.js
@@ -83,15 +103,13 @@ As of April 25, 2025, the active focus is on:
 - TipTap's headless architecture allows for complete UI customization
 - Offline-first approach is possible with Y.js's CRDT capabilities
 - Custom node extensions provide powerful ways to extend the editor
-- Separating styles into dedicated CSS files improves maintainability
-- React context providers are effective for managing editor state
-- Mock AI services are useful for development and demonstration
-- AI features can be integrated seamlessly with existing editor components
 
 ## Active Branches and Changes
 - Main branch: Implementation of AI features and collaborative editing
 
 ## Deployment Status
-- Basic version deployed on Vercel
-- Collaborative version to be deployed after testing
-- AI-enhanced version to be deployed by April 26, 2025
+- Frontend deployed on Vercel with WebSocket connection fixes
+- WebSocket server deployed on Railway with health endpoint
+- Plans to consolidate both services on Railway for simplified deployment
+- Automated deployment scripts implemented for coordinated updates
+- Environment variable validation process established

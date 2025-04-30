@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Railway WebSocket Connection Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 {
+      color: #333;
+    }
+    .test-panel {
+      background-color: #f5f5f5;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .test-result {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .failure {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    .pending {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    .log-area {
+      background-color: #333;
+      color: #f5f5f5;
+      padding: 15px;
+      border-radius: 4px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      height: 200px;
+      overflow-y: auto;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #0069d9;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>TipTap Railway WebSocket Connection Test</h1>
+  
+  <div class="test-panel">
+    <h2>WebSocket Server</h2>
+    <input type="text" id="wsUrl" value="wss://websocket-server-production-b045.up.railway.app" placeholder="WebSocket URL">
+    <button id="connectBtn">Test Connection</button>
+    <div id="wsResult" class="test-result pending">Not tested yet</div>
+  </div>
+  
+  <div class="test-panel">
+    <h2>Connection Log</h2>
+    <div id="logArea" class="log-area"></div>
+  </div>
+  
+  <div class="test-panel">
+    <h2>CORS Test</h2>
+    <p>This tests if the WebSocket server accepts connections from this origin.</p>
+    <div id="corsResult" class="test-result pending">Not tested yet</div>
+  </div>
+
+  <script>
+    // Elements
+    const wsUrlInput = document.getElementById('wsUrl');
+    const connectBtn = document.getElementById('connectBtn');
+    const wsResult = document.getElementById('wsResult');
+    const logArea = document.getElementById('logArea');
+    const corsResult = document.getElementById('corsResult');
+    
+    // WebSocket connection
+    let ws = null;
+    let connectionAttempts = 0;
+    const MAX_ATTEMPTS = 3;
+    
+    // Logging function
+    function log(message, isError = false) {
+      const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
+      const entry = `[${timestamp}] ${message}`;
+      
+      if (isError) {
+        console.error(entry);
+      } else {
+        console.log(entry);
+      }
+      
+      logArea.innerHTML += entry + '\n';
+      logArea.scrollTop = logArea.scrollHeight;
+    }
+    
+    // Test WebSocket connection
+    function testConnection() {
+      const url = wsUrlInput.value.trim();
+      
+      if (!url) {
+        wsResult.textContent = 'Please enter a WebSocket URL';
+        wsResult.className = 'test-result failure';
+        return;
+      }
+      
+      // Reset state
+      if (ws) {
+        ws.close();
+        ws = null;
+      }
+      
+      wsResult.textContent = 'Connecting...';
+      wsResult.className = 'test-result pending';
+      
+      log(`Attempting to connect to ${url}`);
+      connectionAttempts++;
+      
+      try {
+        ws = new WebSocket(url);
+        
+        // Connection opened
+        ws.addEventListener('open', (event) => {
+          wsResult.textContent = 'Connection successful!';
+          wsResult.className = 'test-result success';
+          log('WebSocket connection established successfully');
+          
+          // Test CORS
+          corsResult.textContent = 'CORS check passed - connection accepted from this origin';
+          corsResult.className = 'test-result success';
+          
+          // Send a ping message
+          const pingMessage = JSON.stringify({ type: 'ping', timestamp: Date.now(), origin: window.location.origin });
+          ws.send(pingMessage);
+          log(`Sent: ${pingMessage}`);
+        });
+        
+        // Listen for messages
+        ws.addEventListener('message', (event) => {
+          log(`Received: ${event.data}`);
+        });
+        
+        // Connection closed
+        ws.addEventListener('close', (event) => {
+          log(`Connection closed with code: ${event.code}${event.reason ? ' - ' + event.reason : ''}`);
+          
+          if (event.code !== 1000 && event.code !== 1001) {
+            wsResult.textContent = `Connection closed abnormally with code: ${event.code}`;
+            wsResult.className = 'test-result failure';
+          }
+        });
+        
+        // Connection error
+        ws.addEventListener('error', (error) => {
+          wsResult.textContent = 'Connection failed!';
+          wsResult.className = 'test-result failure';
+          log('WebSocket error occurred', true);
+          
+          // Test CORS
+          corsResult.textContent = 'CORS check may have failed - connection rejected from this origin';
+          corsResult.className = 'test-result failure';
+          
+          // Retry connection if under max attempts
+          if (connectionAttempts < MAX_ATTEMPTS) {
+            log(`Retrying connection (attempt ${connectionAttempts + 1}/${MAX_ATTEMPTS})...`);
+            setTimeout(testConnection, 1000);
+          }
+        });
+        
+      } catch (error) {
+        wsResult.textContent = `Error: ${error.message}`;
+        wsResult.className = 'test-result failure';
+        log(`Error creating WebSocket: ${error.message}`, true);
+      }
+    }
+    
+    // Event listeners
+    connectBtn.addEventListener('click', () => {
+      connectionAttempts = 0;
+      testConnection();
+    });
+    
+    // Initialize
+    log('Test tool ready. Click "Test Connection" to begin.');
+  </script>
+</body>
+</html> 

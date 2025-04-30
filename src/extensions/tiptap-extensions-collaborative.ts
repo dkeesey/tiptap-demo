@@ -89,57 +89,57 @@ export const getCollaborativeExtensions = ({
 
   return [
     // Core TipTap extensions with built-in history disabled
-    StarterKit.configure({ 
+  StarterKit.configure({ 
       history: false, // Disable built-in history as we're using Yjs
-      blockquote: {
-        HTMLAttributes: {
-          class: 'border-l-4 border-gray-300 pl-4 italic',
-        },
-      }
-    }),
-    
+    blockquote: {
+      HTMLAttributes: {
+        class: 'border-l-4 border-gray-300 pl-4 italic',
+      },
+    }
+  }),
+  
     // Explicitly define the Collaboration extension first
-    Collaboration.configure({ 
+  Collaboration.configure({ 
       document: ydoc,
       field: 'document',
-    }),
-    
-    // Formatting extensions
-    TextAlign.configure({
-      types: ['heading', 'paragraph'],
-    }),
-    Highlight,
-    Underline,
-    Link.configure({
-      openOnClick: false,
-      HTMLAttributes: {
-        class: 'text-blue-500 underline',
-      },
-    }),
-    Image.configure({
-      inline: true,
-      allowBase64: true,
-    }),
-    Placeholder.configure({
-      placeholder: 'Start typing or use "/" for commands...',
-    }),
-    
-    // Slash commands
-    SlashCommandExtension,
-    
-    // Custom nodes
-    AiPromptNode.configure({
-      HTMLAttributes: {
-        class: 'ai-prompt-node',
-      },
-    }),
-    
-    // Only include collaboration cursor when provider is available
-    ...(provider ? [
-      CollaborationCursor.configure({ 
-        provider,
+  }),
+  
+  // Formatting extensions
+  TextAlign.configure({
+    types: ['heading', 'paragraph'],
+  }),
+  Highlight,
+  Underline,
+  Link.configure({
+    openOnClick: false,
+    HTMLAttributes: {
+      class: 'text-blue-500 underline',
+    },
+  }),
+  Image.configure({
+    inline: true,
+    allowBase64: true,
+  }),
+  Placeholder.configure({
+    placeholder: 'Start typing or use "/" for commands...',
+  }),
+  
+  // Slash commands
+  SlashCommandExtension,
+  
+  // Custom nodes
+  AiPromptNode.configure({
+    HTMLAttributes: {
+      class: 'ai-prompt-node',
+    },
+  }),
+  
+  // Only include collaboration cursor when provider is available
+  ...(provider ? [
+    CollaborationCursor.configure({ 
+      provider, 
         user: safeUser,
-        render: (user) => {
+      render: (user) => {
           const isLocalUser = user.id === safeUser.id;
           debugLog('Rendering cursor for user', { 
             name: user.name, 
@@ -148,13 +148,13 @@ export const getCollaborativeExtensions = ({
             isLocalUser
           });
           
-          const cursor = document.createElement('span')
-          cursor.classList.add('collaboration-cursor')
-          cursor.setAttribute('style', `border-color: ${user.color}`)
+        const cursor = document.createElement('span')
+        cursor.classList.add('collaboration-cursor')
+        cursor.setAttribute('style', `border-color: ${user.color}`)
           cursor.setAttribute('data-user-id', user.id)
-          
-          const label = document.createElement('div')
-          label.classList.add('collaboration-cursor-label')
+        
+        const label = document.createElement('div')
+        label.classList.add('collaboration-cursor-label')
           label.setAttribute('style', `
             background-color: ${user.color};
             border-radius: 3px;
@@ -168,14 +168,14 @@ export const getCollaborativeExtensions = ({
           
           // Only show "You" for the current user's cursor
           label.textContent = isLocalUser ? 'You' : user.name
-          
-          cursor.appendChild(label)
-          
-          return cursor
+        
+        cursor.appendChild(label)
+        
+        return cursor
         },
-      })
-    ] : []),
-  ]
+    })
+  ] : []),
+]
 }
 
 export {

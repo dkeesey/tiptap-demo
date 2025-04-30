@@ -76,7 +76,7 @@ class WebSocketService {
           ? 'wss://tiptap-demo-production.up.railway.app' 
           : 'ws://localhost:1236'),
       fallbackUrl: import.meta.env.VITE_WEBSOCKET_FALLBACK_URL || 'wss://y-webrtc-signal-backend.fly.dev',
-      useWebRTCFallback: import.meta.env.VITE_USE_WEBRTC_FALLBACK === 'true' || true,
+      useWebRTCFallback: import.meta.env.VITE_USE_WEBRTC_FALLBACK === 'true',
       connectTimeout: Number(import.meta.env.VITE_WEBSOCKET_CONNECT_TIMEOUT) || 10000,
       reconnectAttempts: Number(import.meta.env.VITE_WEBSOCKET_RECONNECT_ATTEMPTS) || 5,
       reconnectInterval: Number(import.meta.env.VITE_WEBSOCKET_RECONNECT_INTERVAL) || 2000,
