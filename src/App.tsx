@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Suspense } from 'react'
 import { saveContent, loadContent, getDefaultContent } from './utils/storage'
-import { CollaborationProvider } from './context/CollaborationContext'
+import { RailwayCollaborationProvider } from './context/RailwayCollaborationContext'
 import { AIProvider } from './context/AI/AIContext'
 import UserPresence from './components/Editor/UserPresence'
 import { DebugToggle } from './components/Debug'
@@ -190,13 +190,13 @@ function App() {
                 </div>
               }>
                 {isCollaborationEnabled ? (
-                  <CollaborationProvider room={roomName}>
+                  <RailwayCollaborationProvider room={roomName}>
                     <UserPresence />
                     <CollaborativeTiptapEditor 
                       onChange={handleEditorChange}
                       aiEnabled={isAIEnabled}
                     />
-                  </CollaborationProvider>
+                  </RailwayCollaborationProvider>
                 ) : (
                   <TiptapEditor 
                     content={editorContent} 

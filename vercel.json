@@ -1,15 +1,13 @@
 {
   "version": 2,
-  "builds": [
-    { "src": "dist/**", "use": "@vercel/static" }
-  ],
-  "routes": [
-    { "src": "/(.*)", "dest": "/dist/" }
-  ],
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
   "env": {
     "VITE_WEBSOCKET_URL": "wss://websocket-server-production-b045.up.railway.app",
     "VITE_WEBSOCKET_PRIMARY_URL": "wss://websocket-server-production-b045.up.railway.app",
     "VITE_APP_TITLE": "TipTap Collaborative Editor",
-    "ENABLE_COLLABORATION": "true"
+    "ENABLE_COLLABORATION": "true",
+    "VITE_USE_WEBRTC_FALLBACK": "false"
   }
 }
