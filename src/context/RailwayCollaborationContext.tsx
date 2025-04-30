@@ -154,20 +154,28 @@ export const RailwayCollaborationProvider: React.FC<CollaborationProviderProps> 
 
   // Get Railway WebSocket URLs with fallback
   const getWebSocketUrls = () => {
-    // Primary WebSocket URL (from environment variable)
-    const primaryUrl = import.meta.env.VITE_WEBSOCKET_URL || 'ws://localhost:1236';
+    // Primary WebSocket URL (from environment variable or dynamically set)
+    const primaryUrl = import.meta.env.VITE_WEBSOCKET_URL || 
+                       (typeof window !== 'undefined' && window.localStorage.getItem('websocket_url')) ||
+                       'ws://localhost:1236';
+    
+    // Log the URL we're using to help debug
+    console.log(`[Railway Collab] Using WebSocket URL: ${primaryUrl}`);
     
     // Determine server type
     const serverType = primaryUrl.includes('railway.app') 
-      ? 'railway' 
-      : primaryUrl.includes('localhost') ? 'local' : 'unknown';
+      ? 'railway' as const
+      : primaryUrl.includes('localhost') ? 'local' as const : 'unknown' as const;
     
-    // Update connection details
-    setConnectionDetails({
+    // Update connection details with explicit values
+    const details = {
       url: primaryUrl,
       room: room,
-      serverType
-    });
+      serverType: serverType
+    };
+    
+    setConnectionDetails(details);
+    console.log(`[Railway Collab] Connection details set:`, details);
     
     return {
       primaryUrl,
@@ -178,26 +186,8 @@ export const RailwayCollaborationProvider: React.FC<CollaborationProviderProps> 
   // Setup WebSocketProvider
   const setupWebSocketProvider = () => {
     try {
-      // Enable Y.js and WebSocket debugging in browser
-      if (typeof window !== 'undefined') {
-        // Add to window object for debugging
-        (window as any).__railwayCollabDebug__ = {
-          getUserId,
-          room,
-          getUrl: getWebSocketUrls,
-          ydoc
-        };
-        
-        // Enable Y.js debugging if localStorage flag is set
-        if (localStorage.getItem('y_debug') === 'true') {
-          console.log('[Railway Collab] Y.js debugging enabled');
-        }
-        
-        // Enable WebSocket debugging if localStorage flag is set
-        if (localStorage.getItem('ws_debug') === 'true') {
-          console.log('[Railway Collab] WebSocket debugging enabled');
-        }
-      }
+      // Add a cancel token to track if setup is still valid
+      const cancelToken = { cancelled: false };
       
       const { primaryUrl, serverType } = getWebSocketUrls();
       
@@ -227,14 +217,22 @@ export const RailwayCollaborationProvider: React.FC<CollaborationProviderProps> 
       let connectionTimer: number | null = null;
       
       // Set user data in awareness after provider creation
-      if (wsProvider.awareness) {
-        wsProvider.awareness.setLocalState({
-          user: currentUser
-        });
+      if (wsProvider.awareness && !cancelToken.cancelled) {
+        // Wrap in try/catch to prevent errors if awareness isn't ready
+        try {
+          wsProvider.awareness.setLocalState({
+            user: currentUser
+          });
+        } catch (err) {
+          console.error(`[Railway Collab] Error setting awareness state:`, err);
+        }
       }
       
-      // Define event handlers
+      // Define event handlers with cancelToken checks
       const handleStatusChange = (event: { status: string }) => {
+        // Skip if cancelled
+        if (cancelToken.cancelled) return;
+        
         console.log(`[Railway Collab] WebSocket status:`, event.status);
         
         if (event.status === 'connected') {
@@ -252,8 +250,8 @@ export const RailwayCollaborationProvider: React.FC<CollaborationProviderProps> 
           setIsConnected(false);
           setConnectionStatus('disconnected');
           
-          // Try to reconnect if not manually disconnected
-          if (connectionAttempts < maxConnectionAttempts) {
+          // Try to reconnect if not manually disconnected and not cancelled
+          if (connectionAttempts < maxConnectionAttempts && !cancelToken.cancelled) {
             connectionAttempts++;
             console.log(`[Railway Collab] Attempting to reconnect (${connectionAttempts}/${maxConnectionAttempts})...`);
             
@@ -265,12 +263,12 @@ export const RailwayCollaborationProvider: React.FC<CollaborationProviderProps> 
             // Set a delay before reconnecting, increasing with each attempt
             const reconnectDelay = Math.min(1000 * connectionAttempts, 5000);
             connectionTimer = window.setTimeout(() => {
-              if (wsProvider) {
+              if (wsProvider && !cancelToken.cancelled) {
                 console.log(`[Railway Collab] Reconnecting after ${reconnectDelay}ms delay...`);
                 wsProvider.connect();
               }
             }, reconnectDelay);
-          } else {
+          } else if (!cancelToken.cancelled) {
             console.error(`[Railway Collab] Max reconnection attempts (${maxConnectionAttempts}) reached. Giving up.`);
             setError(`Failed to connect after ${maxConnectionAttempts} attempts. Please check your connection and try again.`);
           }
@@ -278,6 +276,9 @@ export const RailwayCollaborationProvider: React.FC<CollaborationProviderProps> 
       };
       
       const handleConnectionError = (event: any) => {
+        // Skip if cancelled
+        if (cancelToken.cancelled) return;
+        
         console.error(`[Railway Collab] WebSocket connection error:`, event);
         setIsConnected(false);
         setConnectionStatus('error');
@@ -293,6 +294,9 @@ export const RailwayCollaborationProvider: React.FC<CollaborationProviderProps> 
       };
       
       const handleConnectionClose = () => {
+        // Skip if cancelled
+        if (cancelToken.cancelled) return;
+        
         console.log(`[Railway Collab] WebSocket connection closed`);
         setIsConnected(false);
         setConnectionStatus('disconnected');
@@ -306,47 +310,68 @@ export const RailwayCollaborationProvider: React.FC<CollaborationProviderProps> 
       // Handle awareness update events
       let awarenessUpdateHandler: ((event: any) => void) | null = null;
       
-      if (wsProvider.awareness) {
-        awarenessUpdateHandler = () => {
-          const states = wsProvider.awareness.getStates() as Map<number, any>;
-          const users = new Map<string, User>();
+      if (wsProvider.awareness && !cancelToken.cancelled) {
+        awarenessUpdateHandler = (event: any) => {
+          // Skip if cancelled
+          if (cancelToken.cancelled) return;
           
-          // Log all states with their client IDs for debugging
-          console.log(`[Railway Collab] Awareness update received. All states:`, 
-            Array.from(states.entries()).map(([clientId, state]) => ({
-              clientId,
-              user: state.user,
-              timestamp: new Date().toISOString()
-            }))
-          );
-          
-          states.forEach((state, clientId) => {
-            if (state.user) {
-              const user = state.user as User;
-              users.set(user.id, user);
-              console.log(`[Railway Collab] User found in awareness: ${user.name} (${user.id}) with client ID ${clientId}`);
+          try {
+            const states = wsProvider.awareness.getStates() as Map<number, any>;
+            const users = new Map<string, User>();
+            
+            // Log all states with their client IDs for debugging
+            console.log(`[Railway Collab] Awareness update received. All states:`, 
+              Array.from(states.entries()).map(([clientId, state]) => ({
+                clientId,
+                user: state?.user,
+                timestamp: new Date().toISOString()
+              }))
+            );
+            
+            states.forEach((state, clientId) => {
+              if (state && state.user) {
+                const user = state.user as User;
+                users.set(user.id, user);
+                console.log(`[Railway Collab] User found in awareness: ${user.name} (${user.id}) with client ID ${clientId}`);
+              }
+            });
+            
+            // Log connected users count and IDs
+            console.log(`[Railway Collab] Connected users updated: ${users.size} users`);
+            console.log(`[Railway Collab] User IDs in awareness: ${Array.from(users.keys()).join(', ')}`);
+            
+            if (!cancelToken.cancelled) {
+              setConnectedUsers(users);
+              
+              // DO NOT force connection status based on user presence
+              // It's unreliable and can show incorrect states
             }
-          });
-          
-          // Log connected users count and IDs
-          console.log(`[Railway Collab] Connected users updated: ${users.size} users`);
-          console.log(`[Railway Collab] User IDs in awareness: ${Array.from(users.keys()).join(', ')}`);
-          
-          setConnectedUsers(users);
+          } catch (err) {
+            console.error('[Railway Collab] Error processing awareness update:', err);
+          }
         };
         
-        wsProvider.awareness.on('update', awarenessUpdateHandler);
-        
-        // Initial awareness update
-        if (awarenessUpdateHandler) {
-          awarenessUpdateHandler({} as any);
+        // Safe binding of awareness event
+        try {
+          wsProvider.awareness.on('update', awarenessUpdateHandler);
+          
+          // Initial awareness update
+          if (awarenessUpdateHandler && !cancelToken.cancelled) {
+            awarenessUpdateHandler({} as any);
+          }
+        } catch (err) {
+          console.error('[Railway Collab] Error setting up awareness handler:', err);
         }
       }
       
+      // Set provider reference early so cleanup can access it
       setProvider(wsProvider);
       
       // Return cleanup function
       return () => {
+        // Mark as cancelled to prevent any further async operations
+        cancelToken.cancelled = true;
+        
         console.log(`[Railway Collab] Cleaning up WebSocket provider`);
         
         try {
@@ -356,41 +381,43 @@ export const RailwayCollaborationProvider: React.FC<CollaborationProviderProps> 
             connectionTimer = null;
           }
           
-          // First, remove all event listeners to prevent any async responses
-          if (wsProvider.awareness && awarenessUpdateHandler) {
-            // Log awareness state before cleaning up
-            console.log(`[Railway Collab] Awareness states before cleanup:`, 
-              Array.from(wsProvider.awareness.getStates().entries()));
+          // First, remove all event listeners from provider
+          if (wsProvider) {
+            wsProvider.off('status', handleStatusChange);
+            wsProvider.off('connection-error', handleConnectionError);
+            wsProvider.off('connection-close', handleConnectionClose);
             
-            // Remove the awareness update handler
-            wsProvider.awareness.off('update', awarenessUpdateHandler);
-            
-            // Set local state to null before disconnecting
-            wsProvider.awareness.setLocalState(null);
-          }
-          
-          // Remove event listeners from provider
-          wsProvider.off('status', handleStatusChange);
-          wsProvider.off('connection-error', handleConnectionError);
-          wsProvider.off('connection-close', handleConnectionClose);
-          
-          // Wait a small timeout to allow any in-flight messages to complete
-          setTimeout(() => {
-            try {
-              // Then disconnect and destroy
-              console.log(`[Railway Collab] Disconnecting WebSocket provider`);
-              wsProvider.disconnect();
+            // Clean up awareness if it exists
+            if (wsProvider.awareness) {
+              // Remove any awareness handlers
+              if (awarenessUpdateHandler) {
+                try {
+                  wsProvider.awareness.off('update', awarenessUpdateHandler);
+                } catch (e) {
+                  console.error('[Railway Collab] Error removing awareness handler:', e);
+                }
+              }
               
-              console.log(`[Railway Collab] Destroying WebSocket provider`);
-              wsProvider.destroy();
-              
-              setProvider(null);
-              setIsConnected(false);
-              setConnectionStatus('disconnected');
-            } catch (innerErr) {
-              console.error('[Railway Collab] Error during final WebSocket cleanup:', innerErr);
+              // Set local state to null
+              wsProvider.awareness.setLocalState(null);
             }
-          }, 100); // Increase timeout to allow more time for cleanup
+            
+            // Disconnect in a safe way
+            try {
+              wsProvider.disconnect();
+            } catch (e) {
+              console.error('[Railway Collab] Error during disconnect:', e);
+            }
+            
+            // Destroy with a delay to allow pending operations to complete
+            setTimeout(() => {
+              try {
+                wsProvider.destroy();
+              } catch (e) {
+                console.error('[Railway Collab] Error during destroy:', e);
+              }
+            }, 100);
+          }
         } catch (err) {
           console.error('[Railway Collab] Error during cleanup:', err);
         }
@@ -406,9 +433,70 @@ export const RailwayCollaborationProvider: React.FC<CollaborationProviderProps> 
 
   // Set up WebSocket provider on mount
   useEffect(() => {
-    const cleanup = setupWebSocketProvider();
-    return cleanup;
-  }, [room]);  // Only recreate when room changes
+    // Create a ref to track if component is mounted
+    let isMounted = true;
+    
+    // Create a cleanup function that we'll return
+    const cleanup = () => {
+      console.log(`[Railway Collab] Component unmounting, cleaning up resources`);
+      isMounted = false; // Mark as unmounted first to prevent async callbacks
+
+      try {
+        if (provider) {
+          // First, remove all event listeners
+          if (provider.awareness) {
+            // Clean up awareness properly
+            provider.awareness.setLocalState(null);
+          }
+          
+          // Disconnect the provider
+          console.log(`[Railway Collab] Disconnecting provider`);
+          provider.disconnect();
+          
+          // Set a small timeout before destroying to allow pending operations to complete
+          setTimeout(() => {
+            try {
+              if (provider) {
+                console.log(`[Railway Collab] Destroying provider resources`);
+                provider.destroy();
+              }
+            } catch (err) {
+              console.error(`[Railway Collab] Error during provider destroy:`, err);
+            }
+          }, 100);
+          
+          // Update state immediately
+          setProvider(null);
+          setIsConnected(false);
+          setConnectionStatus('disconnected');
+        }
+      } catch (err) {
+        console.error(`[Railway Collab] Error during cleanup:`, err);
+      }
+    };
+    
+    // Setup function with mounted check
+    const setupAndGetCleanup = () => {
+      const providerCleanup = setupWebSocketProvider();
+      
+      // Return a combined cleanup function
+      return () => {
+        // Execute our mounted check cleanup first
+        cleanup();
+        
+        // Then call the provider's cleanup
+        setTimeout(() => {
+          if (providerCleanup) providerCleanup();
+        }, 100);
+      };
+    };
+    
+    // Setup and get combined cleanup
+    const combinedCleanup = setupAndGetCleanup();
+    
+    // Return the cleanup function
+    return combinedCleanup;
+  }, [room]);
 
   // Force sync function
   const forceSync = () => {
@@ -478,4 +566,6 @@ export const RailwayCollaborationProvider: React.FC<CollaborationProviderProps> 
 
 export const useRailwayCollaboration = () => useContext(CollaborationContext);
 
+// Only export the default context at the end
+// Remove the extra export statement that's causing redeclaration errors
 export default CollaborationContext;
