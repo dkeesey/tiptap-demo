@@ -47,11 +47,13 @@
 - [x] Document technical architecture
 - [x] Add troubleshooting information
 
-## Phase 6: Deployment and Verification (To Be Done)
+## Phase 6: Deployment and Verification (In Progress)
 
-- [ ] Deploy WebSocket server to Railway
-- [ ] Verify WebSocket server is running properly
-- [ ] Deploy frontend to Railway
+- [x] Deploy WebSocket server to Railway
+- [x] Verify WebSocket server is running properly
+- [ ] Configure frontend service to use correct start command in Railway dashboard
+- [ ] Set required environment variables for frontend service
+- [ ] Redeploy frontend service
 - [ ] Verify frontend is running properly
 - [ ] Test cross-service communication
 - [ ] Verify collaborative editing functionality
