@@ -1,0 +1,37 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "npm install && npm run build",
+    "nixpacksPlan": {
+      "phases": {
+        "setup": [
+          "export NODE_ENV=production"
+        ],
+        "install": [
+          "npm install"
+        ],
+        "build": [
+          "npm run build"
+        ]
+      }
+    }
+  },
+  "deploy": {
+    "startCommand": "npm run start:production",
+    "healthcheckPath": "/",
+    "healthcheckTimeout": 100,
+    "restartPolicyType": "ALWAYS"
+  },
+  "env": {
+    "NODE_ENV": "production",
+    "VITE_APP_TITLE": "TipTap Collaborative Editor",
+    "ENABLE_COLLABORATION": "true",
+    "ENABLE_WEBSOCKET_FALLBACK": "true"
+  },
+  "settings": {
+    "node": {
+      "version": "18.x"
+    }
+  }
+}
