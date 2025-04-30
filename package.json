@@ -10,9 +10,15 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:railway": "vite build --config vite.railway.config.ts",
     "preview": "vite preview",
+    "type-check": "tsc --noEmit",
     "start": "node EnhancedWebSocketServer.cjs",
-    "websocket:official": "node EnhancedWebSocketServer.cjs"
+    "start:production": "npm run build && vite preview --port $PORT || 3000",
+    "start:railway": "vite preview --port $PORT || 3000",
+    "websocket:official": "node EnhancedWebSocketServer.cjs",
+    "websocket:railway": "node RailwayEnhancedWebSocketServer.cjs",
+    "deploy:railway": "chmod +x deploy-to-railway.sh && ./deploy-to-railway.sh"
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.16",
@@ -30,8 +36,10 @@
     "@tiptap/suggestion": "^2.11.7",
     "express": "^4.18.2",
     "lucide-react": "^0.263.1",
+    "puppeteer": "^24.7.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "serve": "^14.2.1",
     "uuid": "^9.0.1",
     "ws": "^8.14.2",
     "y-webrtc": "^10.3.0",
