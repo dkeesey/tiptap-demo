@@ -41,11 +41,11 @@ export const ConnectionDebugger: React.FC = () => {
     // Setup listener for awareness changes
     provider.awareness.on('update', updateConnectedUsers);
     
-    return () => {
+      return () => {
       provider.awareness.off('update', updateConnectedUsers);
-    };
+      };
   }, [provider?.awareness, isConnected]);
-  
+
   // Test sync by making a simple update to the document
   const testSync = () => {
     if (!provider) return;
@@ -53,7 +53,7 @@ export const ConnectionDebugger: React.FC = () => {
     // Log the test attempt
     const newLog = `${new Date().toLocaleTimeString()} Testing sync...`;
     setLogs(prev => [...prev.slice(-19), newLog]);
-    
+      
     // Try forcing a sync using internal provider methods
     try {
       // @ts-ignore - Internal method
@@ -73,7 +73,7 @@ export const ConnectionDebugger: React.FC = () => {
       setIsLogsVisible(true);
     }
   };
-  
+
   const clearLogs = () => {
     setLogs([]);
   };
@@ -88,7 +88,7 @@ export const ConnectionDebugger: React.FC = () => {
     // Otherwise truncate long IDs
     return id.length > 12 ? `${id.substring(0, 8)}...` : id;
   };
-  
+
   return (
     <div className="connection-debugger mt-4 border border-gray-200 rounded-md overflow-hidden bg-gray-800 text-white text-sm">
       <div className="flex justify-between items-center px-4 py-2 bg-gray-700">
@@ -124,24 +124,24 @@ export const ConnectionDebugger: React.FC = () => {
         <div className="grid grid-cols-2 gap-4 p-4">
           <div className="connection-status">
             <h4 className="text-gray-400 mb-2">Connection Status</h4>
-            <div className="text-sm">
-              <div className="flex items-center mb-1">
+          <div className="text-sm">
+            <div className="flex items-center mb-1">
                 <div className={`w-2 h-2 rounded-full mr-2 ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
                 <span>Status: {isConnected ? 'connected' : 'disconnected'}</span>
-              </div>
+            </div>
               <div className="mb-1">Room: {provider?.roomname || 'not connected'}</div>
               <div className="mb-1">Client ID: {provider?.awareness?.clientID || 'unknown'}</div>
               <div className="mb-1">Updates: {0}</div>
             </div>
           </div>
-          
+        
           <div className="connected-users">
             <h4 className="text-gray-400 mb-2">Connected Users ({connectedUsers.length})</h4>
             <div className="text-sm">
               {connectedUsers.map(({clientId, user, isCurrentUser}) => (
                 <div key={clientId} className="mb-1 flex items-center">
                   <div 
-                    className="w-2 h-2 rounded-full mr-2" 
+                    className="w-2 h-2 rounded-full mr-2"
                     style={{backgroundColor: user?.color || '#ccc'}}
                   ></div>
                   <span>
@@ -156,7 +156,7 @@ export const ConnectionDebugger: React.FC = () => {
                     {' '}<span className="text-gray-400 text-xs">Client: {clientId}</span>
                   </span>
                 </div>
-              ))}
+            ))}
               
               {connectedUsers.length === 0 && (
                 <div className="text-gray-500">No users connected</div>
@@ -189,7 +189,7 @@ export const ConnectionDebugger: React.FC = () => {
             )}
           </div>
         </div>
-      )}
+        )}
     </div>
   );
 };
