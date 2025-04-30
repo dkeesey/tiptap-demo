@@ -9,6 +9,7 @@ const awarenessProtocol = require('y-protocols/awareness');
 const encoding = require('lib0/encoding');
 const decoding = require('lib0/decoding');
 const map = require('lib0/map');
+const express = require('express');
 
 // Improved logging with log levels
 const LOG_LEVELS = {
@@ -77,10 +78,41 @@ const debounce = {
 // Configurable port from environment or use default
 const port = process.env.WS_PORT || process.env.PORT || 1236;
 
+// HTTP handler with health endpoint
+const httpHandler = (req, res) => {
+  // Set CORS headers for all HTTP responses
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
+  // Handle OPTIONS preflight requests
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204);
+    res.end();
+    return true;
+  }
+  
+  if (req.url === '/health') {
+    res.writeHead(200, {'Content-Type': 'application/json'});
+    res.end(JSON.stringify({
+      status: 'healthy',
+      connections: wss.clients.size,
+      rooms: Array.from(rooms.keys()),
+      uptime: process.uptime(),
+      timestamp: Date.now()
+    }));
+    return true;
+  }
+  
+  return false;
+};
+
 // Create HTTP server
-const server = http.createServer((request, response) => {
-  response.writeHead(200, {'Content-Type': 'text/plain'});
-  response.end('Y.js WebSocket server running\n');
+const server = http.createServer((req, res) => {
+  if (!httpHandler(req, res)) {
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.end('Y.js WebSocket server running\n');
+  }
 });
 
 // Create WebSocket server with enhanced options
